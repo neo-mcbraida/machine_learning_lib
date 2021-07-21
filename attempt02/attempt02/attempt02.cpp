@@ -16,19 +16,20 @@ public:
         for (int i = 0; i < rawInputNodes.size(); i++) {
             weights.push_back(0.5);//default to 0.5, (completely arbitrary number)
             //rawInputNodes.push_back(_rawInputNodes[i]);
+            std::cout << "rawInputNodes addresses: " << rawInputNodes[0] << std::endl;////delete this
         }
-        std::cout << this << std::endl;
     }
     void SetNode() {
         float _rawVal = 0;
         for (int i = 0; i < weights.size(); i++) {
+            std::cout << "node address to be used: " << rawInputNodes[i] << std::endl;
             float prevNode = *(rawInputNodes[i]);
             float temp = weights[i] * prevNode;
             _rawVal += temp;
         }
         rawVal = _rawVal;
         ///
-        std::cout << rawVal << std::endl;
+        std::cout << "raw value: " << rawVal << std::endl;
         ///
     }
 private:
@@ -57,6 +58,7 @@ public:
     virtual void AddNodes() {
         vector<float*> nodeptrs = GetNodePtrs();
         for (int i = 0; i < width; i++) {
+            std::cout << nodeptrs[0] << std::endl;
             Node node(nodeptrs);
             nodes.push_back(node);
         }
@@ -74,6 +76,7 @@ public:
         for (int i = 0; i < nodes.size(); i++) {
             nodes[i].SetNode();
         }
+        NextLayer();
     }
     void NextLayer() {
         //Layer l = *prevLayer;///////////////error reading prev ptr
@@ -84,19 +87,23 @@ public:
         }
     }
 private:
-    vector<float*> GetNodePtrs() {
+    vector<float*> GetNodePtrs() {//somewhere in here there is an error
         vector<float*> nodePtrs;
-        int _layerInd = layerIndex;//layers start from one
+        int _prevlayerInd = layerIndex - 1;//layers start from one
         Layer* _prevLayerPtr = prevLayer;
         Layer _prevLayer = *prevLayer;
         //Layer _prevLayer = *_prevLayerPtr;
-        while (_layerInd > 0) {
-            if (std::find(inpLayers.begin(), inpLayers.end(), _layerInd) != inpLayers.end()) {
-                vector<float*> shortPtrs = _prevLayer.GetLayerNodePtr();
+        while (_prevlayerInd > 0) {
+            if (std::find(inpLayers.begin(), inpLayers.end(), _prevlayerInd) != inpLayers.end()) {
+               // std::cout << "address from temp" << & (_prevLayer.nodes[0].rawVal) << std::endl;
+               std::cout << "address from pointer to layer: " << &((*_prevLayerPtr).nodes[0].rawVal) << std::endl;
+                
+                vector<float*> shortPtrs = (*_prevLayerPtr).GetLayerNodePtr();
+                //vector<float*> shortPtrs = _prevLayer.GetLayerNodePtr();
                 nodePtrs.insert(nodePtrs.end(), shortPtrs.begin(), shortPtrs.end());
             }
-            _layerInd--;
-            _prevLayer = *_prevLayerPtr;
+            _prevlayerInd--;
+            //_prevLayer = *_prevLayerPtr;
         }
         std::reverse(nodePtrs.begin(), nodePtrs.end());
         return nodePtrs;
@@ -104,7 +111,10 @@ private:
     vector<float*> GetLayerNodePtr() {
         vector<float*> nodePtrs;
         for (int i = 0; i < nodes.size(); i++) {
-            nodePtrs.push_back(&(nodes[i].rawVal));
+            float* tempPtr = &(nodes[i]).rawVal;
+            nodePtrs.push_back(tempPtr);
+            std::cout << "node pointers from GetLayerNodePtr: " << nodePtrs[0] << std::endl;
+            //std::cout << &(nodePtrs[i]) << std::endl;//////delete this line
         }
         return nodePtrs;
     }
@@ -146,12 +156,15 @@ public:
     void AddNodes() override {
         for (int i = 0; i < width; i++) {
             Node n({});
+            //std::cout << "addNodes: " << & (n.rawVal) << std::endl;
             nodes.push_back(n);
         }
     }
     void SetNodes(vector<float> inputData) {
         for (int i = 0; i < inputData.size(); i++) {
+            std::cout << "before setting input nodes: " << &(nodes[i].rawVal) << std::endl;
             nodes[i].rawVal = inputData[i];
+            std::cout << "after setting input nodes:  " << &(nodes[i].rawVal) << std::endl;
         }
         NextLayer();
     }
@@ -159,24 +172,27 @@ private:
 };
 
 class Network {
-public:
-    Input inputLayer;
+public:    
+    Input* inputLayer;//input layer stored by network was a copy rather than reference so pointers were not working.
     Network() {
     }
-    void Input(Input layer) {
+    void Input(Input* layer) {
         IncrementDepth();
         inputLayer = layer;
-        inputLayer.layerIndex = depth;
+
+        //std::cout << inputLayer << std::endl;
+        (*inputLayer).layerIndex = depth;
     }
     void HiddenLayer(Layer* layer) {
         IncrementDepth();
-        inputLayer.AddLayer(layer);
-        Layer temp = *layer;
+        (*inputLayer).AddLayer(layer);
+        //std::cout << (*inputLayer).prevLayer << std::endl;
+        Layer temp = *layer;//delete this line
         (*layer).layerIndex = depth;
         (*layer).AddNodes();
     }
     void Estimate(vector<float> inputData) {
-        inputLayer.SetNodes(inputData);
+        (*inputLayer).SetNodes(inputData);
     }
 private:
     int depth = 0;
@@ -190,13 +206,17 @@ int main()
     //std::cout << "Hello World!\n";
 
     Network myNetwork;
-    //Input inp(10);
-    myNetwork.Input(Input(1));
+    Input inp(1);
+    //std::cout << &inp << std::endl;////////////////
+    myNetwork.Input(&inp);
+    std::cout << "actual input address: " << & (inp.nodes[0].rawVal) << std::endl;
     Dense layer1(1, { 1 });
     myNetwork.HiddenLayer(&layer1);//input layers start from 1
+    //std::cout << &(layer1.nodes[0].rawVal) << std::endl;
     //myNetwork.HiddenLayer();
     Dense layer2(1, { 2 });
     myNetwork.HiddenLayer(&layer2);
+    //std::cout << &(layer2.nodes[0].rawVal) << std::endl;
     vector<float> inputData = { 1 };
     myNetwork.Estimate(inputData);
     std::cout << 0 << std::endl;
