@@ -7,9 +7,9 @@ using std::vector;
 class Node {
 public:
     float rawVal;
-    vector<float*> rawInputNodes;
+    vector<Node*> rawInputNodes;
     vector<float> weights;
-    Node(vector<float*> _rawInputNodes) {
+    Node(vector<Node*> _rawInputNodes) {
         rawInputNodes = _rawInputNodes;
         for (int i = 0; i < rawInputNodes.size(); i++) {
             weights.push_back(0.5);//default to 0.5, (completely arbitrary number)
@@ -20,7 +20,7 @@ public:
     void SetNode() {
         float _rawVal = 0;
         for (int i = 0; i < weights.size(); i++) {
-            float prevNode = *(rawInputNodes[i]);
+            float prevNode = (*(rawInputNodes[i])).rawVal;
             float temp = weights[i] * prevNode;
             _rawVal += temp;
         }
@@ -57,7 +57,7 @@ public:
 
     //instantiates and adds n number of nodes
     virtual void AddNodes() {
-        vector<float*> nodeptrs = GetNodePtrs();
+        vector<Node*> nodeptrs = GetNodePtrs();
         for (int i = 0; i < width; i++) {
             std::cout << nodeptrs[0] << std::endl;
             Node node(nodeptrs);
@@ -94,14 +94,14 @@ public:
     }
 private:
     //Returns a 1d array of all pointers to all nodes required for the current layer
-    vector<float*> GetNodePtrs() {
-        vector<float*> nodePtrs;
+    vector<Node*> GetNodePtrs() {
+        vector<Node*> nodePtrs;
         int _prevlayerInd = layerIndex - 1;//layers start from one
         Layer* _prevLayerPtr = prevLayer;
         Layer _prevLayer = *prevLayer;
         while (_prevlayerInd > 0) {
             if (std::find(inpLayers.begin(), inpLayers.end(), _prevlayerInd) != inpLayers.end()) {
-                vector<float*> shortPtrs = (*_prevLayerPtr).GetLayerNodePtr();
+                vector<Node*> shortPtrs = (*_prevLayerPtr).GetLayerNodePtr();
                 nodePtrs.insert(nodePtrs.end(), shortPtrs.begin(), shortPtrs.end());
             }
             _prevlayerInd--;
@@ -111,10 +111,10 @@ private:
     }
 
     //returns 1d array of pointers to all nodes required from a specific layer
-    vector<float*> GetLayerNodePtr() {
-        vector<float*> nodePtrs;
+    vector<Node*> GetLayerNodePtr() {
+        vector<Node*> nodePtrs;
         for (int i = 0; i < nodes.size(); i++) {
-            float* tempPtr = &(nodes[i]).rawVal;
+            Node* tempPtr = &nodes[i];
             nodePtrs.push_back(tempPtr);
         }
         return nodePtrs;
@@ -196,6 +196,14 @@ private:
     int depth = 0;//number of layers in network
     void IncrementDepth() {//does what it says on the tin
         depth++;
+    }
+    float CostFunction(vector<float> actualVals, vector<float> output) {
+        int cost = 0;
+        for (int i = 0; i < actualVals.size(); i++) {
+            int temp = actualVals[i] * output[i];
+            cost += temp * temp;
+        }
+        return cost;
     }
 };
 
