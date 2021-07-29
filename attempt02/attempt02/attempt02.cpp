@@ -1,21 +1,60 @@
 // NNattempt02.cpp : This file contains the 'main' function. Program execution begins and ends there.
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using std::vector;
+using std::string;
+//using std::exp;
+
+class Activation {
+
+};
+
+class Sigmoid : public Activation {
+public:
+    float Activation(float weightsbias) {
+        float result = 1 / (1 + exp(weightsbias));
+        return result;
+    }
+    float DerivActivation(float weightsbias) {
+        float sigmoidRes = Activation(weightsbias);
+        float result = sigmoidRes * (1 - sigmoidRes);
+        return result;
+    }
+};
+
+class Relu : public Activation{
+public:
+    float Activation(float weightsBias) {
+        float rawVal = 0;
+        if (weightsBias >= 0) {
+            rawVal = weightsBias;
+        }
+        return rawVal;
+    }
+    float Dirivactivation(float weightsBias) {
+        if (weightsBias >= 0) { return 1; }
+        else { return 0; }
+    }
+private:
+};
 
 class Node {
 public:
-    float rawVal;
+    float setVal, rawVal, bias = 1;
     vector<Node*> rawInputNodes;
     vector<float> weights;
-    Node(vector<Node*> _rawInputNodes) {
+    vector<float> changes;
+    Activation* activation;
+    float activRatio;
+    Node(vector<Node*> _rawInputNodes, Activation* _activation) {
+        activation = _activation;
         rawInputNodes = _rawInputNodes;
         for (int i = 0; i < rawInputNodes.size(); i++) {
             weights.push_back(0.5);//default to 0.5, (completely arbitrary number)
         }
     }
-
     //sets the value of the node
     void SetNode() {
         float _rawVal = 0;
@@ -29,7 +68,18 @@ public:
         std::cout << "raw value: " << rawVal << std::endl;
         ///
     }
+    void AdjustWeights(vector<float> reverseGrad) {
+        for (int i = 0; i < reverseGrad.size(); i++) {
+            weights[i] = reverseGrad[i];
+        }
+    }
 private:
+    void GetGradients() {
+
+    }
+    float Gradient(Node node) {
+
+    }
 };
 
 class Layer {
@@ -54,17 +104,6 @@ public:
             NextLayer();
         }
     }
-
-    //instantiates and adds n number of nodes
-    virtual void AddNodes() {
-        vector<Node*> nodeptrs = GetNodePtrs();
-        for (int i = 0; i < width; i++) {
-            std::cout << nodeptrs[0] << std::endl;
-            Node node(nodeptrs);
-            nodes.push_back(node);
-        }
-    }
-
     //sets pointer to the next layer
     void SetNextLayer(Layer* layer) {
         nextLayer = layer;
@@ -91,6 +130,52 @@ public:
         if (nextLayer != NULL) {
             (*nextLayer).SetNodes();
         }
+    }    
+    //returns 1d array of pointers to all nodes required from a specific layer
+    vector<Node*> GetLayerNodePtr() {
+        vector<Node*> nodePtrs;
+        for (int i = 0; i < nodes.size(); i++) {
+            Node* tempPtr = &nodes[i];
+            nodePtrs.push_back(tempPtr);
+        }
+        return nodePtrs;
+    }
+private:
+};
+
+class HiddenLayer : public Layer {
+public:
+    Activation* activation;
+    string activ;
+    HiddenLayer(int _width, vector<int> _inputLayers, string _activation) : Layer(_width, _inputLayers) {
+        activ = _activation;
+    }
+    //instantiates and adds n number of nodes
+    void AddNodes() {
+        vector<Node*> nodeptrs = GetNodePtrs();
+        for (int i = 0; i < width; i++) {
+            std::cout << nodeptrs[0] << std::endl;
+            Node node(nodeptrs, activation);
+            nodes.push_back(node);
+        }
+    }
+    vector<float> GetDifferences(vector<float> desiredVals) {
+        vector<float> diffs;
+        for (int i = 0; i < desiredVals.size(); i++) {
+            float dif;
+            dif = desiredVals[i] - nodes[i].rawVal;
+            diffs.push_back(dif);
+        }
+        return diffs;
+    }
+    float GetCost(vector<float> desiredVals) {
+        vector<float> diffs = GetDifferences(desiredVals);
+        float cost = 0;
+        for (int i = 0; i < diffs.size(); i++) {
+            float temp = diffs[i];
+            cost += temp * temp;
+        }
+        return cost;
     }
 private:
     //Returns a 1d array of all pointers to all nodes required for the current layer
@@ -109,28 +194,11 @@ private:
         std::reverse(nodePtrs.begin(), nodePtrs.end());
         return nodePtrs;
     }
-
-    //returns 1d array of pointers to all nodes required from a specific layer
-    vector<Node*> GetLayerNodePtr() {
-        vector<Node*> nodePtrs;
-        for (int i = 0; i < nodes.size(); i++) {
-            Node* tempPtr = &nodes[i];
-            nodePtrs.push_back(tempPtr);
-        }
-        return nodePtrs;
-    }
-};
-
-class HiddenLayer : public Layer {
-public:
-    HiddenLayer(int _width, vector<int> _inputLayers) : Layer(_width, _inputLayers) {
-    }
-private:
 };
 
 class Dense : public HiddenLayer {
 public:
-    Dense(int _width, vector<int> _inputLayers) : HiddenLayer(_width, _inputLayers) {
+    Dense(int _width, vector<int> _inputLayers, string _activation) : HiddenLayer(_width, _inputLayers, _activation) {
 
     }
 private:
@@ -138,6 +206,7 @@ private:
 
 class Input : public Layer {
 public:
+    Activation* activation;
     Input(int _width = 0) : Layer(_width) {
         AddNodes();
     }
@@ -155,9 +224,9 @@ public:
     }
 
     //adds nodes to the layer, depending on it's width
-    void AddNodes() override {
+    void AddNodes(){
         for (int i = 0; i < width; i++) {
-            Node n({});
+            Node n({}, activation);
             nodes.push_back(n);
         }
     }
@@ -174,7 +243,9 @@ private:
 };
 
 class Network {
-public:    
+public:
+    Sigmoid sigmoid;
+    Relu relu;
     Input* inputLayer;
     Network() {
     }
@@ -183,8 +254,9 @@ public:
         inputLayer = layer;
         (*inputLayer).layerIndex = depth;
     }
-    void HiddenLayer(Layer* layer) {//adds hidden layer to network, takes ptr as argument
+    void AddHiddenLayer(HiddenLayer* layer) {//adds hidden layer to network, takes ptr as argument
         IncrementDepth();
+        SetLayerActivation(layer);
         (*inputLayer).AddLayer(layer);
         (*layer).layerIndex = depth;
         (*layer).AddNodes();
@@ -197,13 +269,21 @@ private:
     void IncrementDepth() {//does what it says on the tin
         depth++;
     }
-    float CostFunction(vector<float> actualVals, vector<float> output) {
+   /* float CostFunction(vector<float> actualVals, vector<float> output) {
         int cost = 0;
         for (int i = 0; i < actualVals.size(); i++) {
             int temp = actualVals[i] * output[i];
             cost += temp * temp;
         }
         return cost;
+    } */
+    void SetLayerActivation(HiddenLayer* layer) {
+        if ((*layer).activ == "relu") {
+            (*layer).activation = &relu;
+        }
+        else if ((*layer).activ == "sigmoid") {
+            (*layer).activation = &sigmoid;
+        }
     }
 };
 
@@ -212,10 +292,10 @@ int main()
     Network myNetwork;
     Input inp(2);
     myNetwork.Input(&inp);
-    Dense layer1(2, { 1 });
-    myNetwork.HiddenLayer(&layer1);//input layers start from 1
-    Dense layer2(2, { 1, 2 });
-    myNetwork.HiddenLayer(&layer2);
+    Dense layer1(2, { 1 }, "relu");
+    myNetwork.AddHiddenLayer(&layer1);//input layers start from 1
+    Dense layer2(2, { 1, 2 }, "sigmoid");
+    myNetwork.AddHiddenLayer(&layer2);
     vector<float> inputData = { 1, 1 };
     myNetwork.Estimate(inputData);
 }
