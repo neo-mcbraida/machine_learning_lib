@@ -2,28 +2,36 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <algorithm>
+#include <string>
+#include <fstream>
+#include <ios>
+#include <cstring>
+#include <sstream>
 
 using std::vector;
 using std::string;
-//using std::exp;
+using std::pair;
+using std::to_string;
+using std::ios;
+using std::fstream;
+using std::ifstream;
+using std::getline;
 
-class ActivationFunction {
+class ActivationFunction {//abstract class
 public:
-    virtual float Activation(float t) {
-        return 0.0;
-    }
-    virtual float DerivActivation(float t) {
-        return 0.0;
-    }
+    virtual float Activation(float t) = 0;
+    virtual float DerivActivation(float t) = 0;
+    virtual float derivActivation(float t) = 0;
 };
 
 class Sigmoid : public ActivationFunction {
 public:
-    float Activation(float weightsbias) override{
+    virtual float Activation(float weightsbias) override{
         float result = 1 / (1 + exp(-weightsbias));
         return result;
     }
-    float DerivActivation(float weightsbias) override{
+    virtual float DerivActivation(float weightsbias) override{
         float sigmoidRes = Activation(weightsbias);
         float result = sigmoidRes * (1 - sigmoidRes);
         return result;
@@ -32,64 +40,85 @@ public:
 
 class Relu : public ActivationFunction{
 public:
-    float Activation(float weightsBias) override{
+    virtual float Activation(float weightsBias) override{
         float rawVal = 0;
         if (weightsBias >= 0) {
             rawVal = weightsBias;
         }
         return rawVal;
     }
-    float DerivActivation(float weightsBias) override{
+    virtual float DerivActivation(float weightsBias) override{
         if (weightsBias >= 0) { return 1; }
         else { return 0; }
     }
 private:
 };
 
+class SoftMax : public ActivationFunction{
+public:
+    virtual float Activation(float weightsBias) override {
+        return exp(weightsBias);
+    }
+    float FinalActivation(float weightsBias, vector<float> activations) {
+        float sum = 0;
+        for (int i = 0; i < activations.size(); i++) {
+            sum += activations[i];
+        }
+        weightsBias /= sum;
+        return weightsBias;
+    }
+    virtual float DerivActivation(float weightsBias) override {
+        return Activation(weightsBias);//derivative of e^x = e^x(same as normal activation)
+    }
+};
+
 class Node {
 public:
-    float setVal, rawVal, bias = 1;
+    float setVal, rawVal, biasChanges = 0, bias;
     vector<Node*> rawInputNodes;
     vector<float> weights;
-    vector<float> changes;
-    vector<float> predictions;
-    vector<float> rawPredictions;
+    vector<float> desiredVals, weightChanges, predictions, rawPredictions;
     ActivationFunction* activation;
+    float sumDerivCost = 0;
     Node(vector<Node*> _rawInputNodes, ActivationFunction* _activation) {
         activation = _activation;
-        rawInputNodes = _rawInputNodes;
+        rawInputNodes = _rawInputNodes; 
+        float randomWeight;
         for (int i = 0; i < rawInputNodes.size(); i++) {
-            weights.push_back(0.5);//default to 0.5, (completely arbitrary number)
+            randomWeight = RandomWeight();
+            weights.push_back(randomWeight);//default to 0.5, (completely arbitrary number)
+            weightChanges.push_back(0);
         }
+
+    }
+    void SetChanges(int batchSize) {
+        for (int i = 0; i < weights.size(); i++) {
+            weights[i] += weightChanges[i]/batchSize;
+            weightChanges[i] = 0;
+        }
+        bias += biasChanges/batchSize;
+        biasChanges = 0;
     }
     //sets the value of the node
     void SetBatchSize(int size) {
-        fill_n(predictions.begin(), size, 0);
-        fill_n(rawPredictions.begin(), size, 0);
+        for (int i = 0; i < size; i++) {
+            predictions.push_back(0);
+            rawPredictions.push_back(0);
+        }
     }
     void SetNode() {
         SetRawVal();
         setVal = (*activation).Activation(rawVal);
-        predictions.push_back(setVal);
-        predictions.erase(predictions.begin());
-        rawPredictions.push_back(rawVal);
-        rawPredictions.erase(rawPredictions.begin());
-        ///(below) for debuggin purposes
-        std::cout << "raw value: " << rawVal << std::endl;
-        std::cout << "raw value: " << setVal << std::endl;
-        ///
     }
     void BackPropNode() {
-        float desiredVal = GetDesiredVal();
-        StartBackProp(desiredVal);
-    }
-    void StartBackProp(float desiredVal) {
         float derivactivation = (*activation).DerivActivation(rawVal);
-        float derivCost = 2 * (setVal - desiredVal);
-        AdjustWeightsVals(derivactivation, desiredVal, derivCost);
+        //float derivCost = 2 * (setVal - desiredVal);
+        float derivCost = GetAverageCost();//for output layer desired vals will hold a single val, which is the intended output
+        //sumDerivCost += derivCost;
+        AdjustWeightsVals(derivactivation, derivCost);/////////////
         AdjustBias(derivactivation, derivCost);
     }
-    void SetAverages() {
+    void SetAverages() {////probs delete this
         float _raw = 0, _set = 0;
         int bSize = predictions.size();
         for (int i = 0; i < bSize; i++) {
@@ -100,34 +129,40 @@ public:
         setVal = _set / bSize;
     }
 private:
-    float GetDesiredVal() {
-        float val = setVal;
-        for (int i = 0; i < changes.size(); i++) {
-            setVal += changes[i];
-        }
-        return val;
+    float RandomWeight() {
+        float weight = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2));
+        weight -= 1;
+        return weight;
     }
-    void AdjustWeightsVals(float derivActivation, float desiredVal, float derivCost) {
+    float GetAverageCost() {
+        float derivedCost = 0;
+        float singleCost;
+        for (int i = 0; i < desiredVals.size(); i++) {
+            singleCost = 2 * (setVal - desiredVals[i]);
+        }
+        return derivedCost;
+    }
+    void AdjustWeightsVals(float derivActivation, float derivCost) {
         for (int i = 0; i < weights.size(); i++) {
-            Node& node = *(rawInputNodes[i]);
-            WeightChange(weights[i], node.rawVal, derivActivation, desiredVal);
-            NodeChange(node, weights[i], derivActivation, derivCost);
+            Node& node = *(rawInputNodes[i]);//node is a given input node from a previous layer
+            WeightChange(i, node.rawVal, derivActivation, derivCost);
+            SetPrevNodeGoal(node, weights[i], derivActivation, derivCost);
         }
     }
-    void NodeChange(Node node, float weight, float derivActivation, float derivCost) {
+    void SetPrevNodeGoal(Node node, float weight, float derivActivation, float derivCost) {/////////////this may cause error dont know c++ well yet
         float nodeChange = weight * derivActivation * derivCost;
-        node.changes.push_back(nodeChange);
+        node.desiredVals.push_back(nodeChange);
     }
-    void WeightChange(float weight, float prevNode, float derivActivation, float desiredVal) {
-        float derivCost = 2 * (setVal - desiredVal);
+    void WeightChange(int weightInd, float prevNode, float derivActivation, float derivCost) {
+        //float derivCost = 2 * (setVal - desiredVal);
         float change = prevNode * derivCost * derivActivation;
         change = -1 * change;
-        weight += change;
+        weightChanges[weightInd] += change;
     }
     void AdjustBias(float derivActivation, float derivCost) {
         float change = derivActivation * derivCost;
         change *= -1;
-        bias += change;
+        biasChanges += change;
     }
     void SetRawVal() {
         float _rawVal = bias;
@@ -147,11 +182,18 @@ public:
     int width, layerIndex;
     Layer* nextLayer = NULL;
     Layer* prevLayer = NULL;
+    //layer stores instance of activation function, that can store any information required, such as softmax activation
+    //activation can be done from layer class not node class because of this also.**read me tomorrow**
     Layer(int _width, vector<int> _inpLayers = {}) {
         width = _width;
         inpLayers = _inpLayers;
     }
 
+    virtual void ApplyActivationFunc() {
+        for (int i = 0; i < nodes.size(); i++) {
+            
+        }
+    }
     //adds layer ptr to chain of pointers
     virtual void AddLayer(Layer* layer) {
         if (nextLayer == NULL) {
@@ -159,7 +201,8 @@ public:
             (*layer).SetPreviousLayer(this);////////////////////////////
         }
         else {
-            NextLayer();
+            (*nextLayer).AddLayer(layer);
+            //NextLayer();
         }
     }
     //sets pointer to the next layer
@@ -180,7 +223,7 @@ public:
         }
     }
     //for each node in layer, set value of the node
-    //the calls method to repeat this for next layer
+    //then calls method to repeat this for next layer
     virtual void SetNodes() {
         for (int i = 0; i < nodes.size(); i++) {
             nodes[i].SetNode();
@@ -205,7 +248,7 @@ public:
         }
         return nodePtrs;
     }
-    void SetAverages() {
+    void SetAverages() {////delete this probs
         for (int i = 0; i < nodes.size(); i++) {
             nodes[i].SetAverages();
         }
@@ -219,6 +262,25 @@ public:
         }
         if ((*prevLayer).prevLayer != NULL) {
             (*prevLayer).BackProp();
+        }
+    }
+    void GetWeights(vector<vector<vector<float>>> weights) {
+        int ind = weights.size();//index to add vector of layers weights
+        for (int i = 0; i < weights[ind].size(); i++) {
+            vector<float> nWeights = nodes[i].weights;
+            nWeights.push_back(nodes[i].bias);
+            weights[ind].push_back(nWeights);
+        }
+        if (nextLayer != NULL) {
+            (*nextLayer).GetWeights(weights);
+        }
+    }
+    void SetChanges(int batchSize) {
+        for (Node node : nodes) {
+            node.SetChanges(batchSize);
+        }
+        if (prevLayer != NULL) {
+            (*prevLayer).SetChanges(batchSize);
         }
     }
 private:
@@ -235,7 +297,7 @@ public:
     void AddNodes() {
         vector<Node*> nodeptrs = GetNodePtrs();
         for (int i = 0; i < width; i++) {
-            std::cout << nodeptrs[0] << std::endl;
+            //std::cout << nodeptrs[0] << std::endl;
             Node node(nodeptrs, activation);
             nodes.push_back(node);
         }
@@ -260,7 +322,9 @@ public:
     }
     void StartBackProp(vector<float> desiredOuts) {
         for (int i = 0; i < desiredOuts.size(); i++) {
-            nodes[i].StartBackProp(desiredOuts[i]);
+            nodes[i].desiredVals.clear();
+            nodes[i].desiredVals.push_back(desiredOuts[i]);
+            nodes[i].BackPropNode();
         }
         if((*prevLayer).prevLayer != NULL) {
             (*prevLayer).BackProp();
@@ -272,7 +336,7 @@ private:
         vector<Node*> nodePtrs;
         int _prevlayerInd = layerIndex - 1;//layers start from one
         Layer* _prevLayerPtr = prevLayer;
-        Layer _prevLayer = *prevLayer;
+        Layer _prevLayer = *prevLayer;//////////////////////error on this line 
         while (_prevlayerInd > 0) {
             if (std::find(inpLayers.begin(), inpLayers.end(), _prevlayerInd) != inpLayers.end()) {
                 vector<Node*> shortPtrs = (*_prevLayerPtr).GetLayerNodePtr();
@@ -353,24 +417,39 @@ public:
         (*layer).AddNodes();
         finalLayer = layer;
     }
-    void Estimate(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize) {//passes data to input layer, call next layers recursively
-        (*inputLayer).SetBatchSize(batchSize);
-        fill_n(batchDesiredOuts.begin(), batchSize, vector<float>{0});
-        for (int i = 0; i < inputData.size(); i++) {
-            batchDesiredOuts.erase(batchDesiredOuts.begin());
-            batchDesiredOuts.push_back(desiredOutputs[i]);
-            (*inputLayer).SetNodes(inputData[i]);
-            if (i % batchSize == 0) {
-                vector<float> aveAim = GetAverageAim(desiredOutputs);
-                BackPropegate(aveAim);
+    void Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle=true) {//passes data to input layer, call next layers recursively
+        for (int i = 0; i < epochs; i++) {
+            std::cout << "epoch: " << (i+1) << "/" << epochs << std::endl;
+            if (shuffle == true) {
+                ShuffleData(inputData, desiredOutputs);
             }
+            RunEpoch(inputData, desiredOutputs, epochs, batchSize);
         }
     }
-    void BackPropegate(vector<float> desiredOutput){
-        HiddenLayer& final = *finalLayer;
-        final.SetAverages();
-        final.StartBackProp(desiredOutput);
+    void Predict() {}
+    void SaveModel(string fileName) {
+        string fName = fileName + ".txt";
+        Network& ref = *this;
+        fstream file(fName, ios::out);
+
+        // Writing the object's data in file
+        file.write((char*)&ref, sizeof(ref));
+        /*vector<vector<vector<float>>> weights;
+        weights = GetWeights();
+        std::fstream file;
+        string fName = fileName + ".csv";
+        file.open(fName, ios::out);
+        for (int i = 0; i < weights.size(); i++) {
+            for (int u = 0; u < weights[i].size(); u++) {
+                for (float weight : weights[i][u]) {
+                    file << to_string(weight) << ", ";
+                }
+                file << "; ";
+            }
+            file << "\n";
+        }*/
     }
+    void TestModel() {}
 private:
     int depth = 0;//number of layers in network
     void IncrementDepth() {//does what it says on the tin
@@ -404,17 +483,149 @@ private:
             (*layer).activation = &sigmoid;
         }
     }
+    void RunEpoch(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize) {
+        (*inputLayer).SetBatchSize(batchSize);
+        for (int i = 0; i < batchSize; i++) {
+            batchDesiredOuts.push_back(vector<float> {});
+        }
+        //fill_n(batchDesiredOuts.begin(), batchSize, vector<float>{0});//////////////////////////uh oh, need to store batch cost by storing each cost for each node rather than each value for each node
+        for (int i = 0; i < inputData.size(); i++) {
+            ///batchDesiredOuts.erase(batchDesiredOuts.begin());
+            ///batchDesiredOuts.push_back(desiredOutputs[i]);
+            (*inputLayer).SetNodes(inputData[i]);
+            BackPropegate(desiredOutputs[i]);
+            if (i % batchSize == 0) {
+                float cost = (*finalLayer).GetCost(desiredOutputs[i]);
+                //vector<float> aveAim = GetAverageAim(desiredOutputs);
+                SetChanges(batchSize);
+                OutPutProgress(i, inputData.size(), cost);
+            }
+        }
+    }
+    void BackPropegate(vector<float> desiredOutput) {
+        HiddenLayer & final = *finalLayer;
+        //final.SetAverages();
+        final.StartBackProp(desiredOutput);
+    }
+    void SetChanges(int batchSize) {
+        HiddenLayer & final = *finalLayer;
+        //final.SetAverages();
+        final.SetChanges(batchSize);
+    }
+    void ShuffleData(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs) {
+        int seed = unsigned(std::time(0));
+        std::srand(seed);
+        std::random_shuffle(inputData.begin(), inputData.end());
+
+        std::srand(seed);
+        std::random_shuffle(desiredOutputs.begin(), desiredOutputs.end());
+    }
+    void OutPutProgress(int progress, int amount, float cost) {
+        string output = to_string(progress) + "/" + to_string(amount) + " [";
+        float am = (float)amount;
+        float prog = (float)progress;
+        int numEqs = (int)(round(((float)progress / (float)amount) * 25.0));
+        for (int i = 0; i < 25; i++) {
+            if (i <= numEqs) {
+                output += "#";
+            }
+            else {
+                output += "-";
+            }
+        }
+        output += "] Cost: " + to_string(cost);
+        std::cout << output << std::endl;
+    }
+    /*vector<vector<vector<float>>> GetWeights() {
+        vector<vector<vector<float>>> weights;
+        (*inputLayer).GetWeights(weights);
+        return weights;
+    }*/
 };
+
+void LoadModel(string fileName, Network network) {
+    std::ifstream file;
+
+    // Opening file in input mode
+    file.open(fileName, ios::in);
+
+    // Reading from file into object "obj"
+    file.read((char*)&network, sizeof(network));
+}
+
+void GetData(string fileName, vector<vector<float>>* images, vector<vector<float>>* labels) {
+    ifstream fin;
+    fin.open(fileName);
+    vector<vector<float>> all;
+    vector<float> singleIm;
+    vector<float> _labels;
+    string line;
+    string temp = "";
+    int t, label;
+    while (!fin.eof()) {
+        label = 0;
+        line = "";
+        getline(fin, line);
+        if (line == ""){
+            break;
+        }
+
+        for (char& c : line) {
+            if (c != ',') {
+                temp += c;
+            }
+            else {
+                float pixel = std::stof(temp);
+                if (label == 0) {
+                    label = 1;
+                }
+                else {
+                    pixel /= 255;
+                }
+                singleIm.push_back(pixel);
+                temp = "";
+            }
+        }
+        t = singleIm[0];
+        singleIm.erase(singleIm.begin());
+        _labels.clear();
+        for (int i = 0; i < 10; i++) {
+            if (i == t) {
+                _labels.push_back(1);
+            }
+            else {
+                _labels.push_back(0);
+            }
+        }
+        (*labels).push_back(_labels);
+        (*images).push_back(singleIm);
+        singleIm.clear();
+    }
+}
 
 int main()
 {
     Network myNetwork;
-    Input inp(2);
+    Input inp(783);
     myNetwork.Input(&inp);
-    Dense layer1(2, { 1 }, "relu");
+    Dense layer1(300, { 1 }, "relu");
+    Dense layer2(100, { 2 }, "relu");
+    Dense layer3(50, { 3 }, "relu");
+    Dense layer4(25, { 4 }, "relu");
     myNetwork.AddHiddenLayer(&layer1);//input layers start from 1
-    Dense layer2(2, { 1, 2 }, "sigmoid");
+    Dense layer5(10, { 5 }, "relu");
     myNetwork.AddHiddenLayer(&layer2);
-    vector<float> inputData = { 1, 1 };
-    //myNetwork.Estimate(inputData, 2, 16);
+    myNetwork.AddHiddenLayer(&layer3);
+    myNetwork.AddHiddenLayer(&layer4);
+    myNetwork.AddHiddenLayer(&layer5);
+    //vector<float> inputData = { 1, 1 };
+
+    vector<vector<float>> Trainimages;
+    vector<vector<float>> Trainlabels;
+    vector<vector<float>> Testimages;
+    vector<vector<float>> Testlabels;
+    GetData("C:/Users/nsmne/Documents/machine_learning_lib/fashion-mnist_test.csv", &Testimages, &Testlabels);
+    GetData("C:/Users/nsmne/Documents/machine_learning_lib/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
+    //std::cout << to_string(Trainimages[0][0]);
+    myNetwork.Train(Trainimages, Trainlabels, 2, 16);
 };
