@@ -9,7 +9,7 @@
 #include <cstring>
 #include <sstream>
 
-using std::vector;
+/*using std::vector;
 using std::string;
 using std::pair;
 using std::to_string;
@@ -17,16 +17,20 @@ using std::ios;
 using std::fstream;
 using std::ifstream;
 using std::getline;
+*/
+using namespace std;
 
 class ActivationFunction {//abstract class
 public:
+    string type = 0;
     virtual float Activation(float t) = 0;
     virtual float DerivActivation(float t) = 0;
-    virtual float derivActivation(float t) = 0;
+    virtual void FinalActivation(vector<Node> nodes) {}
 };
 
 class Sigmoid : public ActivationFunction {
 public:
+    string type = "sigmoid";
     virtual float Activation(float weightsbias) override{
         float result = 1 / (1 + exp(-weightsbias));
         return result;
@@ -40,6 +44,7 @@ public:
 
 class Relu : public ActivationFunction{
 public:
+    string type = "relu";
     virtual float Activation(float weightsBias) override{
         float rawVal = 0;
         if (weightsBias >= 0) {
@@ -52,24 +57,6 @@ public:
         else { return 0; }
     }
 private:
-};
-
-class SoftMax : public ActivationFunction{
-public:
-    virtual float Activation(float weightsBias) override {
-        return exp(weightsBias);
-    }
-    float FinalActivation(float weightsBias, vector<float> activations) {
-        float sum = 0;
-        for (int i = 0; i < activations.size(); i++) {
-            sum += activations[i];
-        }
-        weightsBias /= sum;
-        return weightsBias;
-    }
-    virtual float DerivActivation(float weightsBias) override {
-        return Activation(weightsBias);//derivative of e^x = e^x(same as normal activation)
-    }
 };
 
 class Node {
@@ -86,7 +73,7 @@ public:
         float randomWeight;
         for (int i = 0; i < rawInputNodes.size(); i++) {
             randomWeight = RandomWeight();
-            weights.push_back(randomWeight);//default to 0.5, (completely arbitrary number)
+            weights.push_back(randomWeight);
             weightChanges.push_back(0);
         }
 
@@ -115,7 +102,7 @@ public:
         //float derivCost = 2 * (setVal - desiredVal);
         float derivCost = GetAverageCost();//for output layer desired vals will hold a single val, which is the intended output
         //sumDerivCost += derivCost;
-        AdjustWeightsVals(derivactivation, derivCost);/////////////
+        AdjustWeightsVals(derivactivation, derivCost);
         AdjustBias(derivactivation, derivCost);
     }
     void SetAverages() {////probs delete this
@@ -175,6 +162,27 @@ private:
     }
 };
 
+class SoftMax : public ActivationFunction {
+public:
+    string type = "softmax";
+    virtual float Activation(float weightsBias) override {
+        return exp(weightsBias);
+    }
+    void FinalActivation(vector<Node> nodes) {
+        float sum = 0;
+        for (Node node : nodes) {
+            sum += node.rawVal;
+        }
+        for (Node node : nodes) {
+            node.setVal = node.rawVal / sum;
+        }
+    }
+    virtual float DerivActivation(float weightsBias) override {
+        return Activation(weightsBias);//derivative of e^x = e^x(same as normal activation)
+    }
+};
+
+
 class Layer {
 public:
     vector<Node> nodes;
@@ -182,17 +190,14 @@ public:
     int width, layerIndex;
     Layer* nextLayer = NULL;
     Layer* prevLayer = NULL;
+    ActivationFunction* activation;
+    string activ;
     //layer stores instance of activation function, that can store any information required, such as softmax activation
     //activation can be done from layer class not node class because of this also.**read me tomorrow**
-    Layer(int _width, vector<int> _inpLayers = {}) {
+    Layer(int _width, string _activation, vector<int> _inpLayers = {}) {
         width = _width;
         inpLayers = _inpLayers;
-    }
-
-    virtual void ApplyActivationFunc() {
-        for (int i = 0; i < nodes.size(); i++) {
-            
-        }
+        activ = _activation;
     }
     //adds layer ptr to chain of pointers
     virtual void AddLayer(Layer* layer) {
@@ -222,23 +227,10 @@ public:
             (*nextLayer).SetBatchSize(size);
         }
     }
-    //for each node in layer, set value of the node
-    //then calls method to repeat this for next layer
-    virtual void SetNodes() {
-        for (int i = 0; i < nodes.size(); i++) {
-            nodes[i].SetNode();
-        }
-        NextLayer();
-    }
 
     //invokes method to set values of all nodes in the next layer, unless
     //there is no next layer, (then i need to make it output values of node in
     //current layer
-    void NextLayer() {
-        if (nextLayer != NULL) {
-            (*nextLayer).SetNodes();
-        }
-    }    
     //returns 1d array of pointers to all nodes required from a specific layer
     vector<Node*> GetLayerNodePtr() {
         vector<Node*> nodePtrs;
@@ -282,18 +274,32 @@ public:
         if (prevLayer != NULL) {
             (*prevLayer).SetChanges(batchSize);
         }
+    }    
+    void NextLayer() {
+        if (nextLayer != NULL) {
+            (*nextLayer).SetNodes();
+        }
     }
+    void SetNodes() {
+        for (int i = 0; i < nodes.size(); i++) {
+            nodes[i].SetNode();
+        }
+        if (activ != "") {
+            (*activation).FinalActivation(nodes);
+        }
+        NextLayer();
+    }
+    //virtual void SetNodes() = 0;
 private:
 };
 
 class HiddenLayer : public Layer {
 public:
-    ActivationFunction* activation;
-    string activ;
-    HiddenLayer(int _width, vector<int> _inputLayers, string _activation) : Layer(_width, _inputLayers) {
-        activ = _activation;
-    }
+    HiddenLayer(int _width, vector<int> _inputLayers, string _activation) : Layer(_width, _activation, _inputLayers) {}
     //instantiates and adds n number of nodes
+
+        //for each node in layer, set value of the node
+    //then calls method to repeat this for next layer
     void AddNodes() {
         vector<Node*> nodeptrs = GetNodePtrs();
         for (int i = 0; i < width; i++) {
@@ -359,8 +365,7 @@ private:
 
 class Input : public Layer {
 public:
-    ActivationFunction* activation;
-    Input(int _width = 0) : Layer(_width) {
+    Input(int _width = 0) : Layer(_width, "") {
         AddNodes();
     }
 
@@ -399,6 +404,7 @@ class Network {
 public:
     Sigmoid sigmoid;
     Relu relu;
+    SoftMax softmax;
     Input* inputLayer;
     HiddenLayer* finalLayer;
     vector<vector<float>> batchDesiredOuts;
@@ -481,6 +487,9 @@ private:
         }
         else if ((*layer).activ == "sigmoid") {
             (*layer).activation = &sigmoid;
+        }
+        else if ((*layer).activ == "softmax") {
+            (*layer).activation = &softmax;
         }
     }
     void RunEpoch(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize) {
