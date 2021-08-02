@@ -39,17 +39,17 @@ void Layer::AddNodes(vector<int> = {}) {
     }
 }
 
-vector<Node*> Layer::GetInpNodes(vector<int> inpLayers) {//// bad change this
+vector<Node*> Layer::GetInpNodes(vector<int> inputInds) {//// bad change this
     vector<Node*> nodes;
     if (prevLayer != NULL) {
-        if (std::find(inpLayers.begin(), inpLayers.end(), prevLayer->index) != inpLayers.end()) {
+        if (std::find(inputInds.begin(), inputInds.end(), prevLayer->index) != inputInds.end()) {
             for (Node node : prevLayer->nodes) {
                 nodes.push_back(&node);
             }
         }
     }
     if (prevLayer->prevLayer != NULL) {
-        vector<Node*> temp = prevLayer->prevLayer->GetInpNodes(inpLayers);
+        vector<Node*> temp = prevLayer->prevLayer->GetInpNodes(inputInds);
         nodes.insert(nodes.end(), nodes.begin(), nodes.end());
     }
     return nodes;
@@ -64,8 +64,8 @@ void Layer::AddLayer(Layer* newLayer){
 
 }
 
-Dense::Dense(int width, string activation) : Layer(width, activation){
-
+Dense::Dense(int width, vector<int> _inputIndexes, string activation) : Layer(width, activation){
+    inpIndexes = _inputIndexes;
 }
 
 void Dense::ForwardProp() {
@@ -75,8 +75,9 @@ void Dense::ForwardProp() {
     }
 }
 
-void Dense::AddNodes(vector<int> inpLayers) {
-    vector<Node*> inpNodes = GetInpNodes(inpLayers);
+void Dense::AddNodes() {
+    vector<Node*> inpNodes = GetInpNodes(inpIndexes);
+    std::reverse(inpNodes.begin(), inpNodes.end());
     int i = 0;
     while (i < width) {
         Node node(inpNodes);
@@ -117,6 +118,15 @@ float Dense::GetCost(vector<float> desiredOut) {
         cost += temp;
     }
     return cost;
+}
+
+void Dense::SetChanges(int batchSize) {
+    for (Node node : nodes) {
+        node.AdjustWB(batchSize);
+    }
+    if (prevLayer->prevLayer != NULL) {
+        prevLayer -> SetChanges(batchSize);
+    }
 }
 
 Input::Input(int width) : Layer(width, "") {}

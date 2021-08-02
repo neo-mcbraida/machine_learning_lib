@@ -25,7 +25,8 @@ namespace ntwrk {
 		//void SetPrevLayer(Layer* PrevLayer);
 		virtual void ForwardProp();
 		virtual void BackProp();
-		vector<Node*> GetInpNodes(vector<int> inpLayers);
+		virtual void SetChanges(int batchSize);
+		vector<Node*> GetInpNodes(vector<int> inputInds);
 	private:
 		void SetActivation(string activation);
 	};
@@ -33,12 +34,14 @@ namespace ntwrk {
 	class Dense : public Layer {
 	public:
 		vector<Layer*> inputLayers;
-		Dense(int width, string activation);
+		vector<int> inpIndexes;
+		Dense(int width, vector<int> inpIndexes, string activation);
 		void ForwardProp();
-		virtual void AddNodes(vector<int> inp);
+		virtual void AddNodes();
 		void StartBackProp(vector<float> desiredOut);
 		void BackProp();
 		float GetCost(vector<float> desiredOut);
+		void SetChanges(int batchSize){}
 	private:
 	};
 	

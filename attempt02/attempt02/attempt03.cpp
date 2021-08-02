@@ -70,17 +70,17 @@ void GetData(string fileName, vector<vector<float>>* images, vector<vector<float
 int main() {
     Network myNetwork;
     Input inp(783);
-    myNetwork.Input(&inp);
-    Dense layer1(300, "relu");
-    Dense layer2(100, "relu");
-    Dense layer3(50, "relu");
-    Dense layer4(25, "relu");
-    myNetwork.AddHiddenLayer(&layer1);//input layers start from 1
-    Dense layer5(10, "relu");
-    myNetwork.AddHiddenLayer(&layer2);
-    myNetwork.AddHiddenLayer(&layer3);
-    myNetwork.AddHiddenLayer(&layer4);
-    myNetwork.AddHiddenLayer(&layer5);
+    myNetwork.SetInput(&inp);
+    Dense layer1(300, { 0 }, "relu");
+    Dense layer2(100, { 1 }, "relu");
+    Dense layer3(50, { 2 }, "relu");
+    Dense layer4(25, { 3 }, "relu");
+    Dense layer5(10, { 4 }, "relu");
+    myNetwork.AddLayer(&layer1);//input layers start from 1
+    myNetwork.AddLayer(&layer2);
+    myNetwork.AddLayer(&layer3);
+    myNetwork.AddLayer(&layer4);
+    myNetwork.AddLayer(&layer5);
     //vector<float> inputData = { 1, 1 };
 
     vector<vector<float>> Trainimages;

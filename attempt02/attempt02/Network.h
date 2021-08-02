@@ -10,12 +10,12 @@ using std::string;
 namespace ntwrk {
 	class Network {
 	public:
-		int depth;
+		int depth = -1;
 		Input* inputLayer;
-		Layer* outputLayer;
+		Dense* outputLayer;
 		Network();
-		void SetInp(Input* layer);
-		void AddLayer(Layer* layer);
+		void SetInput(Input* layer);
+		void AddLayer(Dense* layer);
 		void Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle);
 		void SaveModel(string fileName);
 		void LoadModel(string fileName);

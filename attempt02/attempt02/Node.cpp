@@ -25,8 +25,10 @@ void Node::AdjustWB(int batchSize) {
     for (int i = 0; i < sumWBChanges.size(); i++) {
         change = sumWBChanges[i] / batchSize;
         weights[i] += change;
+        sumWBChanges[i] = 0;
     }
     bias += biasChange / batchSize;
+    biasChange = 0;
 }
 
 void Node::SetPassChanges(float derivActivation) {
