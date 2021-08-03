@@ -90,8 +90,12 @@ int main() {
     vector<vector<float>> Trainlabels;
     vector<vector<float>> Testimages;
     vector<vector<float>> Testlabels;
-    GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
-    GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
+
+    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
+    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
+
+    //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
+    //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
     myNetwork.Train(Trainimages, Trainlabels, 3, 16);
 }

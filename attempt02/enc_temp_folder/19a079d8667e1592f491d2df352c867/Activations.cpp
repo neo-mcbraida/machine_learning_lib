@@ -48,7 +48,7 @@ void Relu::SetNodeActivation(vector<Node*> nodes) {
 	}
 }
 
-float Softmax::DerivActivation(float val) {// this is soooo wrong.....
+float Softmax::DerivActivation(float val) {
 	return exp(val);
 }
 

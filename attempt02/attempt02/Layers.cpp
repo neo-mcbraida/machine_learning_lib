@@ -133,8 +133,8 @@ void Dense::BackProp() {
 
 float Dense::GetCost(vector<float> desiredOut) {
     float cost = 0;
+    float temp;
     for (int i = 0; i < nodes.size(); i++) {
-        float temp;
         temp = (nodes[i])->activation - desiredOut[i];
         temp = temp * temp;
         cost += temp;
