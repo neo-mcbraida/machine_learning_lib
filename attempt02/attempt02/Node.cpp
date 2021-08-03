@@ -2,18 +2,27 @@
 #include <iostream>
 #include <vector>
 #include "node.h"
+#include <math.h>
 
 using namespace std;
 using namespace ntwrk;
 
 Node::Node(vector<Node*> _inpNodes) {
     inpNodes = _inpNodes;
+    float activation = 0;
+    bias = RandomVal();
+    for (int i = 0; i < _inpNodes.size(); i++) {
+        float weight = RandomVal();
+        weights.push_back(weight);
+        sumWBChanges.push_back(0);
+    }
 }
 
 void Node::SetActivation() {
     float _rawVal = bias;
+    float prevNode;
     for (int i = 0; i < weights.size(); i++) {
-        float prevNode = (*(inpNodes[i])).activation;
+        prevNode = (*(inpNodes[i])).activation;
         float temp = weights[i] * prevNode;
         _rawVal += temp;
     }
@@ -25,9 +34,21 @@ void Node::AdjustWB(int batchSize) {
     for (int i = 0; i < sumWBChanges.size(); i++) {
         change = sumWBChanges[i] / batchSize;
         weights[i] += change;
+        if (weights[i] > 2) {
+            weights[i] = 2;
+        }
+        else if (weights[i] < -2) {
+            weights[i] = -2;
+        }
         sumWBChanges[i] = 0;
     }
     bias += biasChange / batchSize;
+    if (bias > 2) {
+        bias = 2;
+    }
+    else if (bias < -2) {
+        bias = -2;
+    }
     biasChange = 0;
 }
 
@@ -68,7 +89,7 @@ void Node::SetBiasGrad(float avDerCost, float derivActivation) {
 }
 
 float Node::RandomVal() {
-    float weight = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2));
+    float weight = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2));//1- 2
     weight -= 1;
     return weight;
 }

@@ -14,14 +14,15 @@ namespace ntwrk {
 	class Layer {
 	public:
 		int index;
-		vector<Node> nodes;
+		vector<Node*> nodes;
 		ActivationFunc* activation;
-		Layer* nextLayer;
-		Layer* prevLayer;
+		Layer* nextLayer = nullptr;
+		Layer* prevLayer = nullptr;
 		int width;
 		Layer(int width, string activation);
 		virtual void AddNodes(vector<int> inp);
 		void AddLayer(Layer* newLayer);
+		void EndBackProp();
 		//void SetPrevLayer(Layer* PrevLayer);
 		virtual void ForwardProp();
 		virtual void BackProp();
@@ -36,12 +37,12 @@ namespace ntwrk {
 		vector<Layer*> inputLayers;
 		vector<int> inpIndexes;
 		Dense(int width, vector<int> inpIndexes, string activation);
-		void ForwardProp();
+		virtual void ForwardProp();
 		virtual void AddNodes();
 		void StartBackProp(vector<float> desiredOut);
 		void BackProp();
 		float GetCost(vector<float> desiredOut);
-		void SetChanges(int batchSize){}
+		virtual void SetChanges(int batchSize);
 	private:
 	};
 	

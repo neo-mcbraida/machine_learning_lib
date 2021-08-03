@@ -6,6 +6,8 @@
 
 #include "Network.h"
 #include "Layers.h"
+#include "node.h"
+#include "Activations.h"
 
 using namespace std;
 using namespace ntwrk;
@@ -13,17 +15,18 @@ using namespace ntwrk;
 void Network::SetInput(Input* layer) {
 	depth++;
 	inputLayer = layer;
+	layer->AddNodes({});
 }
 
 void Network::AddLayer(Dense* layer) {
 	depth++;
-	inputLayer->index = depth;
+	layer->index = depth;
 	inputLayer->AddLayer(layer);
 	layer->AddNodes();
 	outputLayer = layer;
 }
 
-void Network::Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle = true) {
+void Network::Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle) {
 	for (int i = 0; i < epochs; i++) {
 		std::cout << "epoch: " << (i + 1) << "/" << epochs << std::endl;
 		if (shuffle == true) {
@@ -37,12 +40,22 @@ void Network::RunEpochs(vector<vector<float>> inputData, vector<vector<float>> d
 	float cost;
 	for (int i = 0; i < inputData.size(); i++) {
 		vector<float> exampleInp = inputData[i];
-		inputLayer->StartForwardProp(exampleInp);
+		(*inputLayer).StartForwardProp(exampleInp);
 
 		vector<float> goal = desiredOutputs[i];
 		outputLayer->StartBackProp(goal);
 
-		if (i % batchSize == 0) {
+		if (i % batchSize == 0 && i != 0) {
+
+			for (int u = 0; u < inputLayer->nodes.size(); u++){
+				inputLayer->nodes[u]->desiredVals.clear();
+			}
+			string predictions = "";
+			for (int i = 0; i < outputLayer->nodes.size(); i++) {
+				predictions += to_string(outputLayer->nodes[i]->activation);
+				predictions += " ";
+			}
+			cout << predictions << endl;
 			cost = outputLayer->GetCost(goal);
 			outputLayer -> SetChanges(batchSize);
 			OutputProg(i, inputData.size(), cost);

@@ -139,7 +139,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Activations.cpp" />
     <ClCompile Include="attempt02.cpp" />
+    <ClCompile Include="attempt03.cpp" />
+    <ClCompile Include="Layers.cpp" />
+    <ClCompile Include="Network.cpp" />
+    <ClCompile Include="Node.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Activations.h" />
+    <ClInclude Include="Layers.h" />
+    <ClInclude Include="Network.h" />
+    <ClInclude Include="node.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
