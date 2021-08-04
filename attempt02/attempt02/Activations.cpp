@@ -7,8 +7,6 @@
 using namespace std;
 using namespace ntwrk;
 
-float ActivationFunc::AdjustNodeActivation(Node* n) { return 0.0; }
-
 float Sigmoid::DerivActivation(float val) {
 	float sigmoid;
 	sigmoid = 1 / (1 + exp(-val));

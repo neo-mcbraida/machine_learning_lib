@@ -33,6 +33,9 @@
     <ClCompile Include="attempt03.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Loss.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="node.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Activations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Loss.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

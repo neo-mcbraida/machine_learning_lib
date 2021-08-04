@@ -13,33 +13,36 @@ namespace ntwrk {
 	public:
 		virtual float DerivActivation(float) = 0;
 		virtual void SetNodeActivation(vector<Node*>) = 0;
-		virtual float AdjustNodeActivation(Node*);
+		//virtual float AdjustNodeActivation(Node*);
 	private:
 	};
+
 	class Sigmoid : public ActivationFunc{
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
 	private:
 	};
+
 	class Relu : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
 	private:
 	};
+
 	class Softmax : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
-		virtual float AdjustNodeActivation(Node* node);
+		float AdjustNodeActivation(Node* node);
 	private:
 	};
+
 	class Constant : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*> nodes);
 	private:
 	};
-
 }
