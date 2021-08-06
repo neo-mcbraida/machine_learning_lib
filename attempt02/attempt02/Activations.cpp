@@ -7,6 +7,14 @@
 using namespace std;
 using namespace ntwrk;
 
+// for all these change val to rawVal
+
+void ActivationFunc::Normalise(vector<Node*> nodes, float maxVal) {
+	for (Node* node : nodes) {
+		node->activation = node->rawVal / maxVal;
+	}
+}
+
 float Sigmoid::DerivActivation(float val) {
 	float sigmoid;
 	sigmoid = 1 / (1 + exp(-val));
@@ -16,12 +24,12 @@ float Sigmoid::DerivActivation(float val) {
 
 void Sigmoid::SetNodeActivation(vector<Node*> nodes) {
 	float activation;
-	for (int i = 0; i < nodes.size(); i++) {
-		nodes[i]->SetActivation();
-		activation = 1 / (1 + exp(-(nodes[i]->activation)));
-		nodes[i]->activation = activation;
+	for (Node* node : nodes) {
+		node->SetActivation();
+		activation = 1 / (1 + exp(-(node->rawVal)));
+		node->activation = activation;
 	}
-}
+}//fix this
 
 float Relu::DerivActivation(float val) {
 	if (val < 0) {
@@ -32,37 +40,47 @@ float Relu::DerivActivation(float val) {
 
 void Relu::SetNodeActivation(vector<Node*> nodes) {
 	float maxActiv = 0;
-	for (int i = 0; i < nodes.size(); i++) {
-		(*nodes[i]).SetActivation();
-		if ((*nodes[i]).activation < 0) {
-			(*nodes[i]).activation = 0;
+	for (Node* node : nodes) {
+		node->SetActivation();
+		node->activation = node->rawVal;
+		if (node->activation < 0) {
+			node->activation = 0;
 		}
-		else if ((*nodes[i]).activation > maxActiv) {
-			maxActiv = nodes[i]->activation;
+		else if (node->activation > maxActiv) {
+			maxActiv = node->activation;
 		}
 	}
-	for (int i = 0; i < nodes.size(); i++) {
-		nodes[i]->activation /= maxActiv;
-	}
+	Normalise(nodes, maxActiv);
 }
 
-float Softmax::DerivActivation(float val) {// this is soooo wrong.....
-	return exp(val);
+float Softmax::DerivActivation(float val) {// may need tweaking
+	//float temp = val * (1 - val);
+	//float temp; 
+	float temp = val * (1 - val);
+	return temp;//exp(val);
 }
 
 void Softmax::SetNodeActivation(vector<Node*> nodes) {
 	float totalactivation = 0;
-	for (int i = 0; i < nodes.size(); i++) {
-		totalactivation += AdjustNodeActivation(nodes[i]);
+	float max = 0;
+	for (Node* node : nodes) {
+		if (node->rawVal > max) {
+			max = node->rawVal;
+		}
 	}
-	for (int i = 0; i < nodes.size(); i++) {
-		nodes[i]->activation /= totalactivation;
+	max *= -1;
+	for (Node* node : nodes) {
+		node->rawVal += max;
+		totalactivation += AdjustNodeActivation(node);
+	}
+	for (Node* node : nodes) {
+		node->activation /= totalactivation;
 	}
 }
 
 float Softmax::AdjustNodeActivation(Node* node) {
 	(*node).SetActivation();
-	(*node).activation = exp((*node).activation);
+	(*node).activation = exp((*node).rawVal);
 	return (*node).activation;
 }
 
@@ -71,5 +89,8 @@ float Constant::DerivActivation(float val) {
 }
 
 void Constant::SetNodeActivation(vector<Node*> nodes) {
-	for (int i = 0; i < nodes.size(); i++) { nodes[i]->SetActivation(); }
+	for (Node* node : nodes) { 
+		node->SetActivation(); 
+		node->activation = node->rawVal;
+	}
 }

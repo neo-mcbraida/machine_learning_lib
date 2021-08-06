@@ -13,7 +13,9 @@ namespace ntwrk {
 		int depth = -1;
 		Input* inputLayer;
 		Dense* outputLayer;
+		Loss* lossFunc;
 		//Network();
+		void Compile(Loss* lossFunc);
 		void SetInput(Input* layer);
 		void AddLayer(Dense* layer);
 		void Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle = true);

@@ -86,6 +86,8 @@ int main() {
     myNetwork.AddLayer(&layer5);
     //vector<float> inputData = { 1, 1 };
 
+    myNetwork.Compile(new CatCrossEntro);
+
     vector<vector<float>> Trainimages;
     vector<vector<float>> Trainlabels;
     vector<vector<float>> Testimages;
@@ -97,5 +99,5 @@ int main() {
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
-    myNetwork.Train(Trainimages, Trainlabels, 3, 16);
+    myNetwork.Train(Trainimages, Trainlabels, 3, 8);
 }

@@ -43,19 +43,13 @@ void Network::RunEpochs(vector<vector<float>> inputData, vector<vector<float>> d
 		(*inputLayer).StartForwardProp(exampleInp);
 
 		vector<float> goal = desiredOutputs[i];
-		outputLayer->StartBackProp(goal);
+		outputLayer->StartBackProp(goal, lossFunc);
 
 		if (i % batchSize == 0 && i != 0) {
 
 			for (int u = 0; u < inputLayer->nodes.size(); u++){
 				inputLayer->nodes[u]->desiredVals.clear();
 			}
-			string predictions = "";
-			for (int i = 0; i < outputLayer->nodes.size(); i++) {
-				predictions += to_string(outputLayer->nodes[i]->activation);
-				predictions += " ";
-			}
-			cout << predictions << endl;
 			cost = outputLayer->GetCost(goal);
 			outputLayer -> SetChanges(batchSize);
 			OutputProg(i, inputData.size(), cost);
@@ -87,4 +81,8 @@ void Network::ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>
 
 	std::srand(seed);
 	std::random_shuffle(desiredOutputs.begin(), desiredOutputs.end());
+}
+
+void Network::Compile(Loss* _lossFunc) {
+	lossFunc = _lossFunc;
 }

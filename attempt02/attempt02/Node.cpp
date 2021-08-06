@@ -9,8 +9,8 @@ using namespace ntwrk;
 
 Node::Node(vector<Node*> _inpNodes) {
     inpNodes = _inpNodes;
-    float activation = 0;
-    bias = RandomVal();
+    float activation = 0, rawVal = 0;
+    float bias = RandomVal();
     for (int i = 0; i < _inpNodes.size(); i++) {
         float weight = RandomVal();
         weights.push_back(weight);
@@ -26,7 +26,7 @@ void Node::SetActivation() {
         float temp = weights[i] * prevNode;
         _rawVal += temp;
     }
-    activation = _rawVal;
+    rawVal = _rawVal;
 }
 
 void Node::AdjustWB(int batchSize) {
@@ -52,8 +52,8 @@ void Node::AdjustWB(int batchSize) {
     biasChange = 0;
 }
 
-void Node::SetPassChanges(float derivActivation) {
-    float avDerCost = GetAveDerCost();
+void Node::SetPassChanges(float derivActivation, float avDerCost) {
+    //float avDerCost = GetAveDerCost();
     for (int i = 0; i < inpNodes.size(); i++) {
         SetPrevNodeDesire(avDerCost, i, derivActivation);
         SetWeightGrad(avDerCost, i, derivActivation);

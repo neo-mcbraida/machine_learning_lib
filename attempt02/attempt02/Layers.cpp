@@ -16,7 +16,7 @@ Layer::Layer(int _width, string _activation) {
 }
 
 
-void Layer::BackProp() {}
+void Layer::BackProp(Loss* lossFunc) {}
 void Layer::SetChanges(int batchSize) {}
 void Layer::ForwardProp() {}
 
@@ -104,27 +104,33 @@ void Dense::AddNodes() {
     }
 }
 
-void Dense::StartBackProp(vector<float> desiredOut) {
+void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
     float derivActiv;
+    float derivLoss;
     for (int i = 0; i < nodes.size(); i++) {
-        (nodes[i])->desiredVals.clear();
-        (nodes[i])->desiredVals.push_back(desiredOut[i]);
-        derivActiv = activation->DerivActivation(((nodes[i])->activation));
-        (nodes[i])->SetPassChanges(derivActiv);
+        Node& tempNode = *(nodes[i]);
+        tempNode.desiredVals.clear();
+        tempNode.desiredVals.push_back(desiredOut[i]);
+        derivActiv = activation->DerivActivation(tempNode.rawVal);
+        derivLoss = lossFunc->GetDerLoss(tempNode.activation, tempNode.desiredVals);
+        tempNode.SetPassChanges(derivActiv, derivLoss);
     }
     if (prevLayer->prevLayer != NULL) {
-        prevLayer->BackProp();
+        prevLayer->BackProp(lossFunc);
     }
 }
 
-void Dense::BackProp() {
+void Dense::BackProp(Loss* lossFunc) {
     float derivActiv;
+    float derivCost;
     for (int i = 0; i < nodes.size(); i++) {
-        derivActiv = activation->DerivActivation((nodes[i])->activation);
-        (nodes[i])->SetPassChanges(derivActiv);
+        Node& node = *nodes[i];
+        derivActiv = activation->DerivActivation(node.rawVal);
+        derivCost = lossFunc->GetDerLoss(node.activation, node.desiredVals);
+        node.SetPassChanges(derivActiv, derivCost);// need to be strict on loss and cost namings
     }
     if (prevLayer->prevLayer != NULL) {
-        prevLayer->BackProp();
+        prevLayer->BackProp(lossFunc);
     }
     else {
         prevLayer->EndBackProp();

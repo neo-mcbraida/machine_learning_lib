@@ -4,6 +4,7 @@
 #include <string>
 #include "node.h"
 #include "Activations.h"
+#include "Loss.h";
 
 using std::vector;
 using std::string;
@@ -25,7 +26,7 @@ namespace ntwrk {
 		void EndBackProp();
 		//void SetPrevLayer(Layer* PrevLayer);
 		virtual void ForwardProp();
-		virtual void BackProp();
+		virtual void BackProp(Loss* lossFunc);
 		virtual void SetChanges(int batchSize);
 		vector<Node*> GetInpNodes(vector<int> inputInds);
 	private:
@@ -39,8 +40,8 @@ namespace ntwrk {
 		Dense(int width, vector<int> inpIndexes, string activation);
 		virtual void ForwardProp();
 		virtual void AddNodes();
-		void StartBackProp(vector<float> desiredOut);
-		void BackProp();
+		void StartBackProp(vector<float> desiredOut, Loss* lossFunc);
+		void BackProp(Loss* lossFunc);
 		float GetCost(vector<float> desiredOut);
 		virtual void SetChanges(int batchSize);
 	private:

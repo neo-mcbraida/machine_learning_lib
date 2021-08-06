@@ -8,13 +8,13 @@ using std::vector;
 namespace ntwrk {
 	class Node {
 	public:
-		float activation, biasChange = 0, bias = 0;
+		float activation, rawVal, biasChange = 0, bias = 0;
 		vector<float> weights, sumWBChanges, desiredVals;
 		vector<Node*> inpNodes;
 		Node(vector<Node*> nodes);
 		void SetActivation();
 		void AdjustWB(int batchSize);
-		void SetPassChanges(float derivActivation);
+		void SetPassChanges(float derivActivation, float derivCost);
 	private:
 		float GetAveDerCost();
 		void SetPrevNodeDesire(float avDerCost, int nodeInd, float derivActivation);

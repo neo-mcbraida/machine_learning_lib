@@ -13,8 +13,8 @@ float BinCrossEntro::GetNodesLoss(float activation, vector<float> desiredVals) {
 	return temp;
 }
 
-float BinCrossEntro::GetDerLoss(float, vector<float>) {
-
+float BinCrossEntro::GetDerLoss(float activation, vector<float> desiredVals) {
+	return 0.0;
 }
 
 float MeanSquareError::GetNodesLoss(float activation, vector<float> desiredVals) {
@@ -30,7 +30,7 @@ float MeanSquareError::GetNodesLoss(float activation, vector<float> desiredVals)
 float MeanSquareError::GetDerLoss(float activation, vector<float> desiredVals) {
 	float temp = 0;
 	for (float val : desiredVals) {
-		temp += 2 * (temp - val);
+		temp += 2 * (activation - val);
 	}
 	temp = temp / desiredVals.size();
 	return temp;
@@ -45,6 +45,7 @@ float CatCrossEntro::GetNodesLoss(float activation, vector<float> desiredVals) {
 	return temp;
 }
 
-float CatCrossEntro::GetDerLoss(float, vector<float>) {
-
+float CatCrossEntro::GetDerLoss(float activation, vector<float> desiredVals) {
+	float temp = activation - desiredVals[0];
+	return temp;
 }
