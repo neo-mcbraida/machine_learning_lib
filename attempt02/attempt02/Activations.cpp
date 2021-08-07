@@ -54,9 +54,9 @@ void Relu::SetNodeActivation(vector<Node*> nodes) {
 }
 
 float Softmax::DerivActivation(float val) {// may need tweaking
-	//float temp = val * (1 - val);
-	//float temp; 
 	float temp = val * (1 - val);
+	//float temp; 
+	//float temp = -val * val;
 	return temp;//exp(val);
 }
 

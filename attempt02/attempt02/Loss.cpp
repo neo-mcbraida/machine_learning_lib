@@ -46,6 +46,6 @@ float CatCrossEntro::GetNodesLoss(float activation, vector<float> desiredVals) {
 }
 
 float CatCrossEntro::GetDerLoss(float activation, vector<float> desiredVals) {
-	float temp = activation - desiredVals[0];
+	float temp = -(desiredVals)[0] * (1 / activation);//activation - desiredVals[0];
 	return temp;
 }
