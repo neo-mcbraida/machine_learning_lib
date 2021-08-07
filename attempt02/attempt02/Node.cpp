@@ -3,13 +3,15 @@
 #include <vector>
 #include "node.h"
 #include <math.h>
+#include <numeric>
 
 using namespace std;
 using namespace ntwrk;
 
 Node::Node(vector<Node*> _inpNodes) {
     inpNodes = _inpNodes;
-    float activation = 0, rawVal = 0;
+    float activation = 0, error = 0, EwrtO = 0, rawVal = 0, cost = 0;
+    float deltaWeights = 0;
     float bias = RandomVal();
     for (int i = 0; i < _inpNodes.size(); i++) {
         float weight = RandomVal();
@@ -22,7 +24,7 @@ void Node::SetActivation() {
     float _rawVal = bias;
     float prevNode;
     for (int i = 0; i < weights.size(); i++) {
-        prevNode = (*(inpNodes[i])).activation;
+        prevNode = (*(inpNodes[i])).activation;    
         float temp = weights[i] * prevNode;
         _rawVal += temp;
     }
@@ -42,13 +44,13 @@ void Node::AdjustWB(int batchSize) {
         }
         sumWBChanges[i] = 0;
     }
-    bias += biasChange / batchSize;
-    if (bias > 2) {
-        bias = 2;
-    }
-    else if (bias < -2) {
-        bias = -2;
-    }
+   // bias += biasChange / batchSize;
+   // if (bias > 2) {
+    //    bias = 2;
+   // }
+   // else if (bias < -2) {
+      //  bias = -2;
+    //}
     biasChange = 0;
 }
 
@@ -68,6 +70,7 @@ float Node::GetAveDerCost() {
         total += (2 * (activation - desiredVals[i]));
     }
     total /= amount;
+    //cost += total;
     return total;
 }
 
@@ -79,6 +82,7 @@ void Node::SetPrevNodeDesire(float avDerCost, int nodeInd, float derivActivation
 void Node::SetWeightGrad(float avDerCost, int nodeInd, float derivActivation) {
     float change;
     change = (*inpNodes[nodeInd]).activation * avDerCost * derivActivation;
+    change *= -1;
     sumWBChanges[nodeInd] += change;
 }
 

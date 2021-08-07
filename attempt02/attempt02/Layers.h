@@ -14,6 +14,7 @@ using ntwrk::ActivationFunc;
 namespace ntwrk {
 	class Layer {
 	public:
+		float totalError = 0;
 		int index;
 		vector<Node*> nodes;
 		ActivationFunc* activation;
@@ -26,7 +27,8 @@ namespace ntwrk {
 		void EndBackProp();
 		//void SetPrevLayer(Layer* PrevLayer);
 		virtual void ForwardProp();
-		virtual void BackProp(Loss* lossFunc);
+		virtual void BackProp();
+		virtual void SetPrevEwrtR();
 		virtual void SetChanges(int batchSize);
 		vector<Node*> GetInpNodes(vector<int> inputInds);
 	private:
@@ -40,8 +42,9 @@ namespace ntwrk {
 		Dense(int width, vector<int> inpIndexes, string activation);
 		virtual void ForwardProp();
 		virtual void AddNodes();
+		virtual void SetPrevEwrtA();
 		void StartBackProp(vector<float> desiredOut, Loss* lossFunc);
-		void BackProp(Loss* lossFunc);
+		void BackProp();
 		float GetCost(vector<float> desiredOut);
 		virtual void SetChanges(int batchSize);
 	private:

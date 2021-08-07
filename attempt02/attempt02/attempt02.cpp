@@ -74,10 +74,10 @@ int main() {
     Network myNetwork;
     Input inp(783);
     myNetwork.SetInput(&inp);
-    Dense layer1(300, { 0 }, "relu");
-    Dense layer2(100, { 1 }, "relu");
-    Dense layer3(50, { 2 }, "relu");
-    Dense layer4(25, { 3 }, "relu");
+    Dense layer1(300, { 0 }, "sigmoid");
+    Dense layer2(100, { 1 }, "sigmoid");
+    Dense layer3(50, { 2 }, "sigmoid");
+    Dense layer4(25, { 3 }, "sigmoid");
     Dense layer5(10, { 4 }, "softmax");
     myNetwork.AddLayer(&layer1);//input layers start from 1
     myNetwork.AddLayer(&layer2);

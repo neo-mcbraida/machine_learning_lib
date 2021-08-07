@@ -7,8 +7,8 @@ using std::vector;
 
 namespace ntwrk {
 	class Node {
-	public:
-		float activation, rawVal, biasChange = 0, bias = 0;
+	public://EwrtR is error with respect to rawVal
+		float activation, deltaWeights, rawVal, EwrtX = 0, avCost = 0, biasChange = 0, bias = 0;
 		vector<float> weights, sumWBChanges, desiredVals;
 		vector<Node*> inpNodes;
 		Node(vector<Node*> nodes);

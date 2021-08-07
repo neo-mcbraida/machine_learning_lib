@@ -11,12 +11,14 @@ using namespace ntwrk;
 Layer::Layer(int _width, string _activation) {
     //prevLayer = nullptr;
     //nextLayer = nullptr;
+    totalError = 0;
 	width = _width;
 	SetActivation(_activation);
 }
 
 
-void Layer::BackProp(Loss* lossFunc) {}
+void Layer::BackProp() {}
+void Layer::SetPrevEwrtR() {}
 void Layer::SetChanges(int batchSize) {}
 void Layer::ForwardProp() {}
 
@@ -105,28 +107,68 @@ void Dense::AddNodes() {
 }
 
 void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
-    float derivActiv;
-    float derivLoss;
+    //float derivActiv;
+    //float derivLoss;
+    float deltaWeight;
     for (int i = 0; i < nodes.size(); i++) {
         Node& tempNode = *(nodes[i]);
-        tempNode.desiredVals.clear();
-        tempNode.desiredVals.push_back(desiredOut[i]);
-        derivActiv = activation->DerivActivation(tempNode.rawVal);
-        derivLoss = lossFunc->GetDerLoss(tempNode.activation, tempNode.desiredVals);
-        tempNode.SetPassChanges(derivActiv, derivLoss);
+        //tempNode.desiredVals.clear();
+        //tempNode.desiredVals.push_back(desiredOut[i]);
+        //derivActiv = activation->DerivActivation(tempNode.rawVal);
+        tempNode.EwrtX = lossFunc->GetDerLoss(tempNode.activation, desiredOut[i]); 
+        deltaWeight = tempNode.EwrtX * tempNode.rawVal;
+        for (float weightC : tempNode.sumWBChanges) {
+            weightC -= deltaWeight;
+        }
+        //totalError += tempNode.EwrtR;
+        //tempNode.SetPassChanges(derivActiv, derivLoss);
     }
-    if (prevLayer->prevLayer != NULL) {
-        prevLayer->BackProp(lossFunc);
+    /*for (Node* node : nodes) {
+        float deltaWeights = node->EwrtR * node->rawVal;
+        node->deltaWeights += deltaWeights;
+    }*/
+    SetPrevEwrtA();
+
+    prevLayer->BackProp();
+    //if (prevLayer->prevLayer != NULL) {
+    //    prevLayer->BackProp(lossFunc);
+    //}
+}
+
+void Dense::SetPrevEwrtA() {
+    //float totalEwrtO = 0;
+    for (Node* node : nodes) {
+        for (int i = 0; i < node->weights.size(); i++) {
+            Node & n = *(node->inpNodes[i]);
+            n.EwrtX += node->weights[i] * node->EwrtX;
+            //float temp = node->inpNodes[i]->EwrtX;
+            //n.activation->DerivActivation(temp);
+        }
+        node->EwrtX = 0;
     }
 }
 
-void Dense::BackProp(Loss* lossFunc) {
+void Dense::BackProp() {
+    for (Node* node : nodes) {
+        node->EwrtX *= activation->DerivActivation(node->rawVal);
+        for (int i = 0; i < node->weights.size(); i++) {
+            node->sumWBChanges[i] -= node->inpNodes[i]->activation * node->EwrtX;
+        }
+    }
+    if (prevLayer->prevLayer != NULL) {
+        SetPrevEwrtA();
+        prevLayer->BackProp();
+    }
+}
+
+/*void Dense::BackProp() {
     float derivActiv;
     float derivCost;
     for (int i = 0; i < nodes.size(); i++) {
         Node& node = *nodes[i];
         derivActiv = activation->DerivActivation(node.rawVal);
         derivCost = lossFunc->GetDerLoss(node.activation, node.desiredVals);
+        node.desiredVals.clear();
         node.SetPassChanges(derivActiv, derivCost);// need to be strict on loss and cost namings
     }
     if (prevLayer->prevLayer != NULL) {
@@ -135,7 +177,7 @@ void Dense::BackProp(Loss* lossFunc) {
     else {
         prevLayer->EndBackProp();
     }
-}
+}*/
 
 float Dense::GetCost(vector<float> desiredOut) {
     float cost = 0;
