@@ -29,7 +29,6 @@ float MeanSquareError::GetNodesLoss(float activation, vector<float> desiredVals)
 
 float MeanSquareError::GetDerLoss(float actual, float ideal) {
 	float temp = 2 * (actual - ideal);
-	//temp = temp / desiredVals.size();
 	return temp;
 }
 
@@ -42,14 +41,7 @@ float CatCrossEntro::GetNodesLoss(float activation, vector<float> desiredVals) {
 	return temp;
 }
 
-float CatCrossEntro::GetDerLoss(float activation, float ideal){//vector<float> desiredVals) {
-	//float temp = 0;// -(desiredVals)[0] * (1 / activation);//activation - desiredVals[0];
-	/*for (float goal : desiredVals) {
-		if (activation != (float)0.0) {
-			temp += -goal * (1 / activation);
-		}
-	}*/
-	//temp /= desiredVals.size();
+float CatCrossEntro::GetDerLoss(float activation, float ideal){
 	float temp = activation - ideal;
 	return temp;
 }

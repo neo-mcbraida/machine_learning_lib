@@ -7,8 +7,6 @@
 using namespace std;
 using namespace ntwrk;
 
-// for all these change val to rawVal
-
 void ActivationFunc::Normalise(vector<Node*> nodes, float maxVal) {
 	for (Node* node : nodes) {
 		if (maxVal != (float)0.0) {
@@ -31,12 +29,12 @@ void Sigmoid::SetNodeActivation(vector<Node*> nodes) {
 		node->SetActivation();
 		activation = 1 / (1 + exp(-(node->rawVal)));
 		node->activation = activation;
-		if (max < node->activation || max == NULL) {
-			max = node->activation;
+		if (max < activation || max == NULL) {
+			max = activation;
 		}
 	}
 	Normalise(nodes, max);
-}//fix this
+}
 
 float Relu::DerivActivation(float val) {
 	if (val < 0) {
@@ -56,19 +54,13 @@ void Relu::SetNodeActivation(vector<Node*> nodes) {
 		else if (node->activation > maxActiv) {
 			maxActiv = node->activation;
 		}
-
-		if (isnan(node->activation)) {
-			float x = 0;
-		}
 	}
 	Normalise(nodes, maxActiv);
 }
 
-float Softmax::DerivActivation(float val) {// may need tweaking
+float Softmax::DerivActivation(float val) {
 	float temp = val * (1 - val);
-	//float temp;
-	//float temp = -val * val;
-	return temp;//exp(val);
+	return temp;
 }
 
 void Softmax::SetNodeActivation(vector<Node*> nodes) {

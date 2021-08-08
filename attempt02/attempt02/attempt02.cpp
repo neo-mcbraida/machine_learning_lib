@@ -74,17 +74,16 @@ int main() {
     Network myNetwork;
     Input inp(783);
     myNetwork.SetInput(&inp);
-    Dense layer1(300, { 0 }, "sigmoid");
-    Dense layer2(100, { 1 }, "sigmoid");
-    Dense layer3(50, { 2 }, "sigmoid");
-    Dense layer4(25, { 3 }, "sigmoid");
-    Dense layer5(10, { 4 }, "softmax");
-    myNetwork.AddLayer(&layer1);//input layers start from 1
-    myNetwork.AddLayer(&layer2);
-    myNetwork.AddLayer(&layer3);
-    myNetwork.AddLayer(&layer4);
-    myNetwork.AddLayer(&layer5);
-    //vector<float> inputData = { 1, 1 };
+    //Dense layer1(300, { 0 }, "sigmoid");
+    //Dense layer2(100, { 1 }, "sigmoid");
+    //Dense layer3(50, { 2 }, "sigmoid");
+    //Dense layer4(25, { 3 }, "sigmoid");
+    //Dense layer5(10, { 4 }, "softmax");
+    myNetwork.AddLayer(new Dense(300, { 0 }, "sigmoid"));//&layer1);//input layers start from 1
+    myNetwork.AddLayer(new Dense(100, { 1 }, "sigmoid"));
+    myNetwork.AddLayer(new Dense(50, { 2 }, "sigmoid"));
+    myNetwork.AddLayer(new Dense(25, { 3 }, "sigmoid"));
+    myNetwork.AddLayer(new Dense(10, { 4 }, "softmax"));
 
     myNetwork.Compile(new CatCrossEntro);
 
@@ -93,11 +92,19 @@ int main() {
     vector<vector<float>> Testimages;
     vector<vector<float>> Testlabels;
 
+    // for PC
     GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
     GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
+    // for Laptop
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
-    myNetwork.Train(Trainimages, Trainlabels, 3, 8);
+    myNetwork.Train(Trainimages, Trainlabels, 1, 8);
+
+    myNetwork.Test(Testimages, Testlabels);
+
+    //myNetwork.SaveModel("myModel");
+
+    //myNetwork.LoadModel("myModel.txt");
 }

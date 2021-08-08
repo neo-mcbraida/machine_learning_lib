@@ -9,13 +9,10 @@ using namespace std;
 using namespace ntwrk;
 
 Layer::Layer(int _width, string _activation) {
-    //prevLayer = nullptr;
-    //nextLayer = nullptr;
     totalError = 0;
 	width = _width;
 	SetActivation(_activation);
 }
-
 
 void Layer::BackProp() {}
 void Layer::SetPrevEwrtR() {}
@@ -36,25 +33,23 @@ void Layer::SetActivation(string _activation) {
         activation = a;
     }
     else {
-        Constant* a = new Constant;////////////need to new up these ...
+        Constant* a = new Constant;
         activation = a;
     }
 }
 
 void Layer::AddNodes(vector<int> = {}) {
     for (int i = 0; i < width; i++) {
-        //Node node({});
         Node* node = new Node({});
         nodes.push_back(node);
     }
 }
 
-vector<Node*> Layer::GetInpNodes(vector<int> inputInds) {//// bad change this
+vector<Node*> Layer::GetInpNodes(vector<int> inputInds) {
     vector<Node*> _nodes;
     Node* tempN;
     if (prevLayer != NULL) {
         if (std::find(inputInds.begin(), inputInds.end(), prevLayer->index) != inputInds.end()) {
-            //for (Node _node : prevLayer->nodes) {
             for(int i = 0; i < prevLayer->nodes.size(); i++){
                 tempN = prevLayer->nodes[i];
                 _nodes.push_back(tempN);
@@ -74,7 +69,6 @@ void Layer::AddLayer(Layer* newLayer){
         (*newLayer).prevLayer = this;
     }
     else { (*nextLayer).AddLayer(newLayer); }
-
 }
 
 void Layer::EndBackProp() {
@@ -98,8 +92,7 @@ void Dense::AddNodes() {
     vector<Node*> inpNodes = GetInpNodes(inpIndexes);
     std::reverse(inpNodes.begin(), inpNodes.end());
     int i = 0;
-    while (i < width) {
-        //Node node(inpNodes);need to new up these nodes too    
+    while (i < width) {    
         Node* nodeP = new Node(inpNodes);
         nodes.push_back(nodeP);
         i++;
@@ -107,42 +100,24 @@ void Dense::AddNodes() {
 }
 
 void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
-    //float derivActiv;
-    //float derivLoss;
     float deltaWeight;
     for (int i = 0; i < nodes.size(); i++) {
         Node& tempNode = *(nodes[i]);
-        //tempNode.desiredVals.clear();
-        //tempNode.desiredVals.push_back(desiredOut[i]);
-        //derivActiv = activation->DerivActivation(tempNode.rawVal);
         tempNode.EwrtX = lossFunc->GetDerLoss(tempNode.activation, desiredOut[i]); 
         deltaWeight = tempNode.EwrtX * tempNode.rawVal;
         for (float weightC : tempNode.sumWBChanges) {
             weightC -= deltaWeight;
         }
-        //totalError += tempNode.EwrtR;
-        //tempNode.SetPassChanges(derivActiv, derivLoss);
     }
-    /*for (Node* node : nodes) {
-        float deltaWeights = node->EwrtR * node->rawVal;
-        node->deltaWeights += deltaWeights;
-    }*/
     SetPrevEwrtA();
-
     prevLayer->BackProp();
-    //if (prevLayer->prevLayer != NULL) {
-    //    prevLayer->BackProp(lossFunc);
-    //}
 }
 
 void Dense::SetPrevEwrtA() {
-    //float totalEwrtO = 0;
     for (Node* node : nodes) {
         for (int i = 0; i < node->weights.size(); i++) {
             Node & n = *(node->inpNodes[i]);
             n.EwrtX += node->weights[i] * node->EwrtX;
-            //float temp = node->inpNodes[i]->EwrtX;
-            //n.activation->DerivActivation(temp);
         }
         node->EwrtX = 0;
     }

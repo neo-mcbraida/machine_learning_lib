@@ -20,12 +20,12 @@ namespace ntwrk {
 		ActivationFunc* activation;
 		Layer* nextLayer = nullptr;
 		Layer* prevLayer = nullptr;
+		vector<int> inputLayers;
 		int width;
 		Layer(int width, string activation);
 		virtual void AddNodes(vector<int> inp);
 		void AddLayer(Layer* newLayer);
 		void EndBackProp();
-		//void SetPrevLayer(Layer* PrevLayer);
 		virtual void ForwardProp();
 		virtual void BackProp();
 		virtual void SetPrevEwrtR();

@@ -6,14 +6,12 @@
 
 using std::vector;
 using std::string;
-//using ntwrk::Node;
 
 namespace ntwrk {
 	class ActivationFunc {
 	public:
 		virtual float DerivActivation(float) = 0;
 		virtual void SetNodeActivation(vector<Node*>) = 0;
-		//virtual float AdjustNodeActivation(Node*);
 		void Normalise(vector<Node*>, float);
 	private:
 	};

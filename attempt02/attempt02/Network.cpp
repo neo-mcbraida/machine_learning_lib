@@ -3,7 +3,8 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-
+#include <fstream>
+#include <numeric>
 #include "Network.h"
 #include "Layers.h"
 #include "node.h"
@@ -83,6 +84,61 @@ void Network::ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>
 	std::random_shuffle(desiredOutputs.begin(), desiredOutputs.end());
 }
 
+void Network::SaveModel(string fileName) {
+	string fName = fileName + ".txt";
+	Network& ref = *this;
+	fstream file(fName, ios::out);
+
+	// Writing the object's data in file
+	file.write((char*)&ref, sizeof(ref));
+	cout << "saved model" << endl;
+}
+
+void Network::LoadModel(string fileName) {
+	std::ifstream file;
+	Network& temp = *this;
+	// Opening file in input mode
+	file.open(fileName, ios::in);
+
+	// Reading from file into object "obj"
+	file.read((char*)&temp, sizeof(temp));
+	cout << "loaded model" << endl;
+}
+
 void Network::Compile(Loss* _lossFunc) {
+	// = *inputLayer;
 	lossFunc = _lossFunc;
+}
+
+void Network::Test(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs) {
+	vector<float> accuracies;
+	vector<float> predictions;
+	float diff;
+	cout << "Testing: " << endl;
+	for (int i = 0; i < inputData.size(); i++) {
+		predictions = Predict(inputData[i]);
+		for (int u = 0; u < desiredOutputs[i].size(); u++) {
+			if (desiredOutputs[i][u] == 1) {
+				diff = (desiredOutputs[i][u] - predictions[u]) / predictions[u];
+				diff = 1 - diff;
+				accuracies.push_back(diff);
+				break;
+			}
+		}
+		if (i % 32 == 0) {
+			float cost = outputLayer->GetCost(desiredOutputs[i]);
+			OutputProg(i, inputData.size(), cost);
+		}
+	}
+	float avAccuracy = (accumulate(accuracies.begin(), accuracies.end(), 0)) / inputData.size();
+	cout << "accuracy: " << avAccuracy << endl;
+}
+
+vector<float> Network::Predict(vector<float> example) {
+	(*inputLayer).StartForwardProp(example);
+	vector<float> output;
+	for (Node* node : outputLayer->nodes) {
+		output.push_back(node->activation);
+	}
+	return output;
 }

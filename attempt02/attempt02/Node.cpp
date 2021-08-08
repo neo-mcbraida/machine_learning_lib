@@ -44,52 +44,6 @@ void Node::AdjustWB(int batchSize) {
         }
         sumWBChanges[i] = 0;
     }
-   // bias += biasChange / batchSize;
-   // if (bias > 2) {
-    //    bias = 2;
-   // }
-   // else if (bias < -2) {
-      //  bias = -2;
-    //}
-    biasChange = 0;
-}
-
-void Node::SetPassChanges(float derivActivation, float avDerCost) {
-    //float avDerCost = GetAveDerCost();
-    for (int i = 0; i < inpNodes.size(); i++) {
-        SetPrevNodeDesire(avDerCost, i, derivActivation);
-        SetWeightGrad(avDerCost, i, derivActivation);
-    }
-    SetBiasGrad(avDerCost, derivActivation);
-}
-
-float Node::GetAveDerCost() {
-    float total = 0;
-    int amount = desiredVals.size();
-    for (int i = 0; i < amount; i++) {
-        total += (2 * (activation - desiredVals[i]));
-    }
-    total /= amount;
-    //cost += total;
-    return total;
-}
-
-void Node::SetPrevNodeDesire(float avDerCost, int nodeInd, float derivActivation) {
-    float desVal = weights[nodeInd] * avDerCost * derivActivation;
-    (*inpNodes[nodeInd]).desiredVals.push_back(desVal);
-}
-
-void Node::SetWeightGrad(float avDerCost, int nodeInd, float derivActivation) {
-    float change;
-    change = (*inpNodes[nodeInd]).activation * avDerCost * derivActivation;
-    change *= -1;
-    sumWBChanges[nodeInd] += change;
-}
-
-void Node::SetBiasGrad(float avDerCost, float derivActivation) {
-    float change = derivActivation * avDerCost;
-    change *= -1;
-    biasChange += change;
 }
 
 float Node::RandomVal() {

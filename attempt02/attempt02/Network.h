@@ -14,15 +14,17 @@ namespace ntwrk {
 		Input* inputLayer;
 		Dense* outputLayer;
 		Loss* lossFunc;
-		//Network();
+		vector<float> weights, biases, widths;
+		vector<string> activations;
+		vector<vector<int>> inpLayers;
 		void Compile(Loss* lossFunc);
 		void SetInput(Input* layer);
 		void AddLayer(Dense* layer);
 		void Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle = true);
-		//void SaveModel(string fileName);
-		//void LoadModel(string fileName);
-		//void TestModel(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
-		//void Predict(vector<vector<float>> example);
+		void SaveModel(string fileName);
+		void LoadModel(string fileName);
+		void Test(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
+		vector<float> Predict(vector<float> example);
 		private:
 		void RunEpochs(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize);
 		void ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
