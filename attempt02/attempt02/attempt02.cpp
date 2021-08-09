@@ -94,24 +94,24 @@ int main() {
 
     myNetwork.Compile("CatCrossEntro");
 
-    vector<vector<float>> Trainimages;
-    vector<vector<float>> Trainlabels;
-    vector<vector<float>> Testimages;
-    vector<vector<float>> Testlabels;
+    //vector<vector<float>> Trainimages;
+    //vector<vector<float>> Trainlabels;
+    //vector<vector<float>> Testimages;
+    //vector<vector<float>> Testlabels;
 
     // for PC
-    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
-    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
+    //GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
+    //GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
     // for Laptop
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
-    myNetwork.Train(Trainimages, Trainlabels, 1, 8);
+    //myNetwork.Train(Trainimages, Trainlabels, 1, 8);
 
-    myNetwork.Test(Testimages, Testlabels);
+    //myNetwork.Test(Testimages, Testlabels);
 
-    //myNetwork.SaveModel("myModel");
+    myNetwork.SaveModel("myModel");
 
     //myNetwork.LoadModel("myModel.txt");
 }

@@ -33,6 +33,7 @@ namespace ntwrk {
 		virtual void SetChanges(int batchSize);
 		virtual void SaveLayer(string);
 		vector<Node*> GetInpNodes(vector<int> inputInds);
+		void SumWeights(vector<float>&);
 	private:
 		void SetActivation(string activation);
 	};

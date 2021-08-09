@@ -35,5 +35,7 @@ namespace ntwrk {
 		void ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
 		void OutputProg(int progress, int amount, float cost);
 		//void BackPropegate(vector<vector<float>> desiredOutputs);
+	private:
+		void PopulateWeights();
 	};
 }

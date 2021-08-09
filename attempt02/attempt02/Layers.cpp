@@ -80,6 +80,17 @@ void Layer::SaveLayer(string fName) {
     //const char* layer
 }
 
+void Layer::SumWeights(vector<float>& weights){
+    for (Node* node : nodes) {
+        for (float weight : node->weights) {
+            weights.push_back(weight);
+        }
+    }
+    if (nextLayer != NULL) {
+        nextLayer->SumWeights(weights);
+    }
+}
+
 void Layer::EndBackProp() {
     for (int i = 0; i < nodes.size(); i++) {
         nodes[i]->desiredVals.clear();
