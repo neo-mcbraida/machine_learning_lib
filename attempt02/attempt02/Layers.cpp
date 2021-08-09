@@ -11,7 +11,9 @@ using namespace ntwrk;
 Layer::Layer(int _width, string _activation) {
     totalError = 0;
 	width = _width;
+    activationName = _activation;
 	SetActivation(_activation);
+    nodes = {};
 }
 
 void Layer::BackProp() {}
@@ -38,9 +40,11 @@ void Layer::SetActivation(string _activation) {
     }
 }
 
-void Layer::AddNodes(vector<int> = {}) {
+void Layer::AddNodes() {
     for (int i = 0; i < width; i++) {
-        Node* node = new Node({});
+        //weightsPointer->push_back({});
+        //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
+        Node* node = new Node({}, index);
         nodes.push_back(node);
     }
 }
@@ -71,6 +75,11 @@ void Layer::AddLayer(Layer* newLayer){
     else { (*nextLayer).AddLayer(newLayer); }
 }
 
+void Layer::SaveLayer(string fName) {
+    fName = fName + "/layer" + to_string(index);
+    //const char* layer
+}
+
 void Layer::EndBackProp() {
     for (int i = 0; i < nodes.size(); i++) {
         nodes[i]->desiredVals.clear();
@@ -92,8 +101,10 @@ void Dense::AddNodes() {
     vector<Node*> inpNodes = GetInpNodes(inpIndexes);
     std::reverse(inpNodes.begin(), inpNodes.end());
     int i = 0;
-    while (i < width) {    
-        Node* nodeP = new Node(inpNodes);
+    while (i < width) {
+        //weightsPointer->push_back({});
+        //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
+        Node* nodeP = new Node(inpNodes, index);
         nodes.push_back(nodeP);
         i++;
     }

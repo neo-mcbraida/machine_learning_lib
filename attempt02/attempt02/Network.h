@@ -10,16 +10,21 @@ using std::string;
 namespace ntwrk {
 	class Network {
 	public:
-		int depth = -1;
+		int depth = 0;
 		Input* inputLayer;
 		Dense* outputLayer;
 		Loss* lossFunc;
-		vector<float> weights, biases, widths;
-		vector<string> activations;
-		vector<vector<int>> inpLayers;
-		void Compile(Loss* lossFunc);
-		void SetInput(Input* layer);
-		void AddLayer(Dense* layer);
+		string lossFuncName;
+		vector<float> biases = {}, weights = {};
+		vector<int> widths = {};
+		vector<string> activations = {};
+		vector<vector<int>> inpIndexes = {};
+		void Compile(string lossFuncNam);
+		void SetLoss(string lossFuncNam);
+		//void SetInput(Input* layer);
+		void SetInput(int);
+		void AddLayer(int, vector<int>, string);
+		//void AddLayer(Dense* layer);
 		void Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle = true);
 		void SaveModel(string fileName);
 		void LoadModel(string fileName);

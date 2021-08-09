@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <fstream>
 #include <numeric>
+
+#include <direct.h>
+
 #include "Network.h"
 #include "Layers.h"
 #include "node.h"
@@ -13,19 +16,33 @@
 using namespace std;
 using namespace ntwrk;
 
-void Network::SetInput(Input* layer) {
+void Network::SetInput(int width) {
+	widths.push_back(width);
+	inpIndexes.push_back({});
+	activations.push_back("");
+	depth++;
+}
+
+/*void Network::SetInput(Input* layer) {
 	depth++;
 	inputLayer = layer;
 	layer->AddNodes({});
+}*/
+
+void Network::AddLayer(int width, vector<int> _inpLayers, string _activationName) {
+	widths.push_back(width);
+	inpIndexes.push_back(_inpLayers);
+	activations.push_back(_activationName);
+	depth++;
 }
 
-void Network::AddLayer(Dense* layer) {
+/*void Network::AddLayer(Dense* layer) {
 	depth++;
 	layer->index = depth;
 	inputLayer->AddLayer(layer);
 	layer->AddNodes();
 	outputLayer = layer;
-}
+}*/
 
 void Network::Train(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize, bool shuffle) {
 	for (int i = 0; i < epochs; i++) {
@@ -39,6 +56,7 @@ void Network::Train(vector<vector<float>> inputData, vector<vector<float>> desir
 
 void Network::RunEpochs(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize) {
 	float cost;
+	weights.push_back({});
 	for (int i = 0; i < inputData.size(); i++) {
 		vector<float> exampleInp = inputData[i];
 		(*inputLayer).StartForwardProp(exampleInp);
@@ -84,15 +102,20 @@ void Network::ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>
 	std::random_shuffle(desiredOutputs.begin(), desiredOutputs.end());
 }
 
-void Network::SaveModel(string fileName) {
-	string fName = fileName + ".txt";
+/*void Network::SaveModel(string fileName) {
+	string fileName = "/" + fileName;// + ".txt";
+	const char* dir = fileName.c_str();
 	Network& ref = *this;
-	fstream file(fName, ios::out);
+	bool saved;
 
+	saved = mkdir(dir);
+
+	fstream file("network", ios::out);
 	// Writing the object's data in file
 	file.write((char*)&ref, sizeof(ref));
-	cout << "saved model" << endl;
-}
+	//cout << "saved model" << endl;
+	inputLayer->SaveLayer(fileName);
+}*/
 
 void Network::LoadModel(string fileName) {
 	std::ifstream file;
@@ -105,9 +128,35 @@ void Network::LoadModel(string fileName) {
 	cout << "loaded model" << endl;
 }
 
-void Network::Compile(Loss* _lossFunc) {
+void Network::SetLoss(string lossFuncNam) {
+	lossFuncName = lossFuncNam;
+	if (lossFuncNam == "BinCrossEntro") {
+		BinCrossEntro* a = new BinCrossEntro;
+		lossFunc = a;
+	}
+	else if (lossFuncNam == "CatCrossEntro") {
+		CatCrossEntro* a = new CatCrossEntro;
+		lossFunc = a;
+	}
+	else if (lossFuncNam == "MeanSquareError") {
+		MeanSquareError* a = new MeanSquareError;
+		lossFunc = a;
+	}
+}
+
+void Network::Compile(string _lossFunc) {
 	// = *inputLayer;
-	lossFunc = _lossFunc;
+	inputLayer = new Input(widths[0]);
+	//vector<vector<float>>* weightsPointer = &weights;
+	inputLayer->AddNodes();
+	for (int i = 1; i < depth; i++) {
+		Dense* layer = new Dense(widths[i], inpIndexes[i], activations[i]);
+		inputLayer->AddLayer(layer);
+		layer->index = i;
+		layer->AddNodes();
+		outputLayer = layer;
+	}
+	SetLoss(_lossFunc);
 }
 
 void Network::Test(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs) {

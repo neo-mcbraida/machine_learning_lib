@@ -20,16 +20,18 @@ namespace ntwrk {
 		ActivationFunc* activation;
 		Layer* nextLayer = nullptr;
 		Layer* prevLayer = nullptr;
-		vector<int> inputLayers;
+		vector<int> inpIndexes;
 		int width;
+		string activationName;
 		Layer(int width, string activation);
-		virtual void AddNodes(vector<int> inp);
-		void AddLayer(Layer* newLayer);
+		virtual void AddNodes();
+		void AddLayer(Layer*);
 		void EndBackProp();
 		virtual void ForwardProp();
 		virtual void BackProp();
 		virtual void SetPrevEwrtR();
 		virtual void SetChanges(int batchSize);
+		virtual void SaveLayer(string);
 		vector<Node*> GetInpNodes(vector<int> inputInds);
 	private:
 		void SetActivation(string activation);
@@ -38,7 +40,7 @@ namespace ntwrk {
 	class Dense : public Layer {
 	public:
 		vector<Layer*> inputLayers;
-		vector<int> inpIndexes;
+		//vector<int> inpIndexes;
 		Dense(int width, vector<int> inpIndexes, string activation);
 		virtual void ForwardProp();
 		virtual void AddNodes();
@@ -54,6 +56,7 @@ namespace ntwrk {
 	public:
 		Input(int width);
 		void StartForwardProp(vector<float> input);
+		//virtual void SaveLayer(const char*);
 	private:
 		void SetNodes(vector<float> input);
 	};

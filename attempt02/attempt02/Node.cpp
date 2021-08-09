@@ -8,16 +8,25 @@
 using namespace std;
 using namespace ntwrk;
 
-Node::Node(vector<Node*> _inpNodes) {
+Node::Node(vector<Node*> _inpNodes, int index) {
     inpNodes = _inpNodes;
     float activation = 0, error = 0, EwrtO = 0, rawVal = 0, cost = 0;
     float deltaWeights = 0;
     float bias = RandomVal();
+    //int ind = weightsPointer.size();
+    //vector<float> Ws = *(new vector<float>());
+    //weights = &weightsPointer;
     for (int i = 0; i < _inpNodes.size(); i++) {
         float weight = RandomVal();
         weights.push_back(weight);
+        //(*weightsPointer)[index].push_back(weight);
+
+        //vector<float>* weights = &(*weightsPointer)[index];
         sumWBChanges.push_back(0);
     }
+    //(*weightsPointer).push_back(Ws);
+    //weights = &Ws;
+    //weights = &((*weightsPointer)[weightsPointer->size() -1]);
 }
 
 void Node::SetActivation() {
