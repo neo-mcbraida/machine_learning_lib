@@ -15,7 +15,7 @@ namespace ntwrk {
 		Dense* outputLayer;
 		Loss* lossFunc;
 		string lossFuncName;
-		vector<float> biases = {}, weights = {};
+		vector<float> biases, weights;
 		vector<int> widths = {};
 		vector<string> activations = {};
 		vector<vector<int>> inpIndexes = {};

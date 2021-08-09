@@ -72,6 +72,7 @@ void GetData(string fileName, vector<vector<float>>* images, vector<vector<float
 
 int main() {
     Network myNetwork;
+
    /* Input inp(783);
     myNetwork.SetInput(&inp);
     //Dense layer1(300, { 0 }, "sigmoid");
@@ -85,14 +86,15 @@ int main() {
     myNetwork.AddLayer(new Dense(25, { 3 }, "sigmoid"));
     myNetwork.AddLayer(new Dense(10, { 4 }, "softmax"));
     */
-    myNetwork.SetInput(783);
-    myNetwork.AddLayer(300, { 0 }, "sigmoid");//&layer1);//input layers start from 1
-    myNetwork.AddLayer(100, { 1 }, "sigmoid");
-    myNetwork.AddLayer(50, { 2 }, "sigmoid");
-    myNetwork.AddLayer(25, { 3 }, "sigmoid");
-    myNetwork.AddLayer(10, { 4 }, "softmax");
 
-    myNetwork.Compile("CatCrossEntro");
+    //myNetwork.SetInput(783);
+    //myNetwork.AddLayer(300, { 0 }, "sigmoid");//&layer1);//input layers start from 1
+    //myNetwork.AddLayer(100, { 1 }, "sigmoid");
+    //myNetwork.AddLayer(50, { 2 }, "sigmoid");
+    //myNetwork.AddLayer(25, { 3 }, "sigmoid");
+    //myNetwork.AddLayer(10, { 4 }, "softmax");
+
+    //myNetwork.Compile("CatCrossEntro");
 
     //vector<vector<float>> Trainimages;
     //vector<vector<float>> Trainlabels;
@@ -111,7 +113,8 @@ int main() {
 
     //myNetwork.Test(Testimages, Testlabels);
 
-    myNetwork.SaveModel("myModel");
+    //myNetwork.SaveModel("myModel");
 
-    //myNetwork.LoadModel("myModel.txt");
+    myNetwork.LoadModel("myModel");
+    cout << "test" << endl;
 }

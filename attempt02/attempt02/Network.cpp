@@ -193,18 +193,32 @@ vector<float> Network::Predict(vector<float> example) {
 }
 
 void Network::PopulateWeights() {
-	inputLayer->SumWeights(weights);
+	vector<float>& Ws = weights;
+	inputLayer->SumWeights(Ws);
 }
 
 void Network::SaveModel(string fileName) {
+	//PopulateWeights();
+
 	PopulateWeights();
-	cout << "populated weights" << endl;
 
 	fileName += ".txt";
-	Network& network = *this;
+	//Network& network = *this;
 
-	fstream file("network", ios::out);
+	Network temp;
+	temp.weights = weights;
+	temp.lossFuncName = lossFuncName;
+	temp.inpIndexes = inpIndexes;
+	temp.activations = activations;
+	temp.biases = biases;
+
+	ofstream file;
+
+	file.open(fileName, ios::out | ios::trunc);
 	// Writing the object's data in file
-	file.write((char*)&network, sizeof(network));
+	file.write((char*)&temp, sizeof(temp));
+
+	//file.write((char*)this, sizeof(*this));
+	file.close();
 	cout << "saved model" << endl;
 }
