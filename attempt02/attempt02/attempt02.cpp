@@ -87,34 +87,36 @@ int main() {
     myNetwork.AddLayer(new Dense(10, { 4 }, "softmax"));
     */
 
-    //myNetwork.SetInput(783);
-    //myNetwork.AddLayer(300, { 0 }, "sigmoid");//&layer1);//input layers start from 1
-    //myNetwork.AddLayer(100, { 1 }, "sigmoid");
-    //myNetwork.AddLayer(50, { 2 }, "sigmoid");
-    //myNetwork.AddLayer(25, { 3 }, "sigmoid");
-    //myNetwork.AddLayer(10, { 4 }, "softmax");
+    myNetwork.SetInput(783);
+    myNetwork.AddLayer(300, { 0 }, "sigmoid");//&layer1);//input layers start from 1
+    myNetwork.AddLayer(100, { 1 }, "sigmoid");
+    myNetwork.AddLayer(50, { 2 }, "sigmoid");
+    myNetwork.AddLayer(50, { 3 }, "sigmoid");
+    myNetwork.AddLayer(50, { 4 }, "sigmoid");
+    myNetwork.AddLayer(25, { 5 }, "sigmoid");
+    myNetwork.AddLayer(10, { 6 }, "softmax");
 
-    //myNetwork.Compile("CatCrossEntro");
+    myNetwork.Compile("CatCrossEntro");
 
-    //vector<vector<float>> Trainimages;
-    //vector<vector<float>> Trainlabels;
-    //vector<vector<float>> Testimages;
-    //vector<vector<float>> Testlabels;
+    vector<vector<float>> Trainimages;
+    vector<vector<float>> Trainlabels;
+    vector<vector<float>> Testimages;
+    vector<vector<float>> Testlabels;
 
     // for PC
-    //GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
-    //GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
+    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
+    GetData("C:/Users/Neo/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
     // for Laptop
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_test.csv", &Testimages, &Testlabels);
     //GetData("C:/Users/nsmne/Documents/MnistFashion/fashion-mnist_train.csv", &Trainimages, &Trainlabels);
 
-    //myNetwork.Train(Trainimages, Trainlabels, 1, 8);
+    myNetwork.Train(Trainimages, Trainlabels, 1, 8);
 
-    //myNetwork.Test(Testimages, Testlabels);
+    myNetwork.Test(Testimages, Testlabels);
 
     //myNetwork.SaveModel("myModel");
 
-    myNetwork.LoadModel("myModel");
-    cout << "test" << endl;
+    //myNetwork.LoadModel("myModel");
+    //cout << "test" << endl;
 }
