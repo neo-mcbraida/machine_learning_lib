@@ -52,6 +52,11 @@ namespace ntwrk {
 		virtual void SetChanges(int batchSize);
 	private:
 	};
+
+	class Recurrent : public Layer {
+	public:
+		virtual void AddNodes();
+	};
 	
 	class Input : public Layer{
 	public:

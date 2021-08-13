@@ -44,7 +44,7 @@ void Layer::AddNodes() {
     for (int i = 0; i < width; i++) {
         //weightsPointer->push_back({});
         //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
-        Node* node = new Node({}, index);
+        Node* node = new Node({});
         nodes.push_back(node);
     }
 }
@@ -115,7 +115,7 @@ void Dense::AddNodes() {
     while (i < width) {
         //weightsPointer->push_back({});
         //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
-        Node* nodeP = new Node(inpNodes, index);
+        Node* nodeP = new Node(inpNodes);
         nodes.push_back(nodeP);
         i++;
     }
