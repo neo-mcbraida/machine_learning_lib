@@ -60,14 +60,3 @@ float Node::RandomVal() {
     weight -= 1;
     return weight;
 }
-
-MemoryNode::MemoryNode(vector<Node*> inps) : Node(inps) {
-    float prevVal = 0;
-    float w = RandomVal();
-    weights.push_back(w);
-}//parent constructor is run first
-
-void MemoryNode::SetActivation() {
-    Node::SetActivation();
-    rawVal += weights[weights.size()] * prevVal;
-}

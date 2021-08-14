@@ -19,12 +19,5 @@ namespace ntwrk {
 		float RandomVal();
 	private:
 	};
-
-	class MemoryNode : public Node{
-	public:
-		float prevVal;
-		MemoryNode(vector<Node*>);
-		virtual void SetActivation();
-	};
 }
 

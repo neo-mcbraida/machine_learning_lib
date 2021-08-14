@@ -36,6 +36,11 @@ void Sigmoid::SetNodeActivation(vector<Node*> nodes) {
 	Normalise(nodes, max);
 }
 
+float Sigmoid::Operate(float val) {
+	float result = 1 / (1 + exp(-(val)));
+	return result;
+}
+
 float Relu::DerivActivation(float val) {
 	if (val < 0) {
 		return 0;
@@ -56,6 +61,13 @@ void Relu::SetNodeActivation(vector<Node*> nodes) {
 		}
 	}
 	Normalise(nodes, maxActiv);
+}
+
+float Relu::Operate(float val) {
+	if (val < 0) {
+		val = 0;
+	}
+	return val;
 }
 
 float Softmax::DerivActivation(float val) {
@@ -87,6 +99,10 @@ float Softmax::AdjustNodeActivation(Node* node) {
 	return (*node).activation;
 }
 
+float Tanh::Operate(float val) {
+	return exp(val);
+}
+
 float Constant::DerivActivation(float val) {
 	return val;
 }
@@ -96,4 +112,16 @@ void Constant::SetNodeActivation(vector<Node*> nodes) {
 		node->SetActivation(); 
 		node->activation = node->rawVal;
 	}
+}
+
+float Tanh::DerivActivation(float val) {
+	float tanh_result = tanh(val);
+	float derivative = 1 - (tanh_result * tanh_result);
+	return derivative;
+}
+
+void Tanh::SetNodeActivation(vector<Node*> nodes) {};
+
+float Tanh::Operate(float val) {
+	return tanh(val);
 }

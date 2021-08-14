@@ -20,6 +20,7 @@ namespace ntwrk {
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
+		virtual float Operate(float val);
 	private:
 	};
 
@@ -27,6 +28,7 @@ namespace ntwrk {
 	public:
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
+		virtual float Operate(float val);
 	private:
 	};
 
@@ -35,6 +37,7 @@ namespace ntwrk {
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*>);
 		float AdjustNodeActivation(Node* node);
+		virtual float Operate(float val);
 	private:
 	};
 
@@ -43,5 +46,12 @@ namespace ntwrk {
 		virtual float DerivActivation(float);
 		virtual void SetNodeActivation(vector<Node*> nodes);
 	private:
+	};
+
+	class Tanh : public ActivationFunc {
+	public:
+		virtual float DerivActivation(float val);
+		virtual void SetNodeActivation(vector<Node*> nodes);
+		virtual float Operate(float val);
 	};
 }
