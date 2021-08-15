@@ -38,7 +38,7 @@ namespace ntwrk {
 		float GetCByWf(float sum, float input, int index);
 		float GetCByWu(float sum, float input, int index);
 		float GetCByWc(float sum, float input, int index);
-		float GetTotalError();
+		float SetPrevError(float common_deriv, int index);
 	private:
 		float RandomVal();
 	};
