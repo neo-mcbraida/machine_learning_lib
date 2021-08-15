@@ -16,8 +16,8 @@ namespace ntwrk {
 		virtual void SetActivation();
 		void AdjustWB(int batchSize);
 		//void SaveNode();
-		float RandomVal();
 	private:
+		float RandomVal();
 	};
 }
 
