@@ -30,7 +30,7 @@ namespace ntwrk {
 		void LoadModel(string fileName);
 		void Test(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
 		vector<float> Predict(vector<float> example);
-		private:
+	private:
 		void RunEpochs(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs, int epochs, int batchSize);
 		void ShuffleBatch(vector<vector<float>> inputData, vector<vector<float>> desiredOutputs);
 		void OutputProg(int progress, int amount, float cost);

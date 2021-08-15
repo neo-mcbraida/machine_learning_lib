@@ -18,6 +18,7 @@ LSTMNode::LSTMNode(vector<LSTMNode*> inps) {
         weights[u].push_back(RandomVal());
         for (int i = 0; i < no_of_inputs; i++) {
             weights[u].push_back(RandomVal());
+            weightChange[u].push_back(0);
         }
     }
     //Sigmoid sigmoid;
@@ -26,8 +27,8 @@ LSTMNode::LSTMNode(vector<LSTMNode*> inps) {
 
 void LSTMNode::SetActivation() {
     vector<float> timeStepInps = {};
+    timeStepInps.push_back(out[out.size() - 1]);// may not need to store array of all inputs
     for (LSTMNode* node : inpNodes) {
-        timeStepInps.push_back(out[out.size() - 1]);
         timeStepInps.push_back(node->out[out.size() - 1]);
     }
     inputs.push_back(timeStepInps);
@@ -45,6 +46,7 @@ void LSTMNode::SetActivation() {
     Oz.push_back(temp_Iz);
     SetState();
     SetOut();
+    totalErrors.push_back(0);
 }
 
 float LSTMNode::ReturnSum(vector<float> weights, float bias) {
@@ -75,13 +77,19 @@ float LSTMNode::RandomVal() {
     return weight;
 }
 
-void LSTMNode::BackProp(float nextState, float nextForget, float NextErrorbyActiv) {//remove NextErrorByActiv
-    int timeSteps = state.size();
+void LSTMNode::BackProp(float nextState, float nextForget, float lossDeriv) {//remove NextErrorByActiv
+    int timeSteps = state.size() - 1;
     // back prop through time starting at t = t
-    float nextState = 0;
-    float nextForget = 0;
+    // below is wrong, fix
+    float firstE = lossDeriv + tanh(state[timeSteps]) * sigmoid.DerivActivation(sums[3][timeSteps]) * weights[3][0];
+    float common_deriv = firstE * GetActivationByState(timeSteps);
+    AddWeightChange(timeSteps, nextState, common_deriv);
+    float nextState = state[timeSteps];
+    float nextForget = Fz[timeSteps];
+    timeSteps--;
+    totalErrors[timeSteps] += firstE;// this is totally gross
     for (int t = timeSteps; t > 0; t--) {// at this point total loss should already have a value
-        float common_deriv = (totalErrors[t] * GetActivationByState(t)) + nextForget;
+        common_deriv = (totalErrors[t] * GetActivationByState(t)) + nextForget;
         for (int i = 0; i < inpNodes.size(); i++) {
             AddWeightChange(t, nextState, common_deriv);
         }
@@ -97,16 +105,16 @@ void LSTMNode::AddWeightChange(int time, float nextState, float common_deriv) {
         float deltaIz = common_deriv * GetCByWf(sums[1][time], inputs[1][time], time);
         float deltaAz = common_deriv * GetCByWf(sums[2][time], inputs[2][time], time);
         float deltaWz = common_deriv * GetAByWo(sums[3][time], inputs[3][time], time);
-        weightChange[0].push_back(deltaFz);
-        weightChange[1].push_back(deltaIz);
-        weightChange[2].push_back(deltaAz);
-        weightChange[3].push_back(deltaWz);
+        weightChange[0][i] += deltaFz;
+        weightChange[1][i] += deltaIz;
+        weightChange[2][i] += deltaAz;
+        weightChange[3][i] += deltaWz;
         float prevNodeError = 0;
         prevNodeError += weights[0][i] * totalErrors[time];
         prevNodeError += weights[1][i] * totalErrors[time];
         prevNodeError += weights[2][i] * totalErrors[time];
         prevNodeError += weights[3][i] * totalErrors[time];
-        inpNodes[i]->totalErrors.insert(totalErrors.begin(), prevNodeError);
+        inpNodes[i]->totalErrors[time] += prevNodeError;// prev nodes of same timestep
     }
 }
 
@@ -145,12 +153,14 @@ float LSTMNode::GetCByWc(float sum, float input, int index) {
     return result;
 }
 
-float LSTMNode::SetPrevError(float common_deriv, int index) {
+// Same node prev timestep
+void LSTMNode::SetPrevError(float common_deriv, int index) {
     float temp = state[index - 1] * (Fz[index] * (1 - Fz[index])) * out[index - 1];
     float result = 3 * temp * common_deriv;
     temp = tanh(state[index]) * sigmoid.DerivActivation(sums[3][index]) * weights[3][0];
     result += totalErrors[index] * temp;
     totalErrors[index - 1] += (result);
+    //return result;
 }
 
 // need to add attribute to store current timestep during backprop
