@@ -16,6 +16,7 @@ namespace ntwrk {
 	public:
 		float totalError = 0;
 		int index;
+		vector<Cell*> nodes;
 		ActivationFunc* activation;
 		Layer* nextLayer = nullptr;
 		Layer* prevLayer = nullptr;
@@ -63,6 +64,7 @@ namespace ntwrk {
 	
 	class Input : public Layer{
 	public:
+		vector<Node*> nodes;
 		Input(int width);
 		void StartForwardProp(vector<float> input);
 		//virtual void SaveLayer(const char*);

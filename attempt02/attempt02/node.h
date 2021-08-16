@@ -12,8 +12,8 @@ namespace ntwrk {
 		vector<Cell*> inpNodes;
 		virtual void AddError(float error, int index) = 0; 
 		//virtual void SetNodeActivation() = 0;
-		virtual void AdjustWB(int) = 0;
-		virtual void SetActivation() = 0;
+		virtual void AdjustWB(int);
+		virtual void SetActivation();
 	};
 
 	class Node : public Cell{

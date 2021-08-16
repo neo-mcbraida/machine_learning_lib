@@ -14,7 +14,7 @@ Layer::Layer(int _width, string _activation) {
 	width = _width;
     activationName = _activation;
 	SetActivation(_activation);
-    nodes = {};
+    //nodes = {};
 }
 
 void Layer::BackProp() {}
@@ -67,9 +67,12 @@ vector<Cell*> Layer::GetInpNodes() {
     }*/
     vector<Cell*> nodes = {};
     if (prevLayer != NULL) {
-        for (Cell* n : prevLayer->nodes) {
-            nodes.push_back(n);
+        for (int i = 0; i < prevLayer->nodes.size(); i++) {
+            nodes.push_back(prevLayer->nodes[i]);
         }
+        //for (Cell* n : prevLayer->nodes) {
+        //    nodes.push_back(n);
+        //}
     }
     return nodes;
 }
@@ -122,7 +125,7 @@ void Dense::AddNodes() {
     while (i < width) {
         //weightsPointer->push_back({});
         //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
-        Cell* nodeP = new Node(inpNodes);
+        Node* nodeP = new Node(inpNodes);
         nodes.push_back(nodeP);
         i++;
     }
@@ -131,7 +134,7 @@ void Dense::AddNodes() {
 void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
     float deltaWeight;
     for (int i = 0; i < nodes.size(); i++) {
-        Cell& tempNode = *(nodes[i]);
+        Node& tempNode = *(nodes[i]);
         tempNode.EwrtX = lossFunc->GetDerLoss(tempNode.activation, desiredOut[i]); 
         deltaWeight = tempNode.EwrtX * tempNode.rawVal;
         for (float weightC : tempNode.sumWBChanges) {
@@ -143,9 +146,9 @@ void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
 }
 
 void Dense::SetPrevEwrtA() {
-    for (Cell* node : nodes) {
+    for (Node* node : nodes) {
         for (int i = 0; i < node->weights.size(); i++) {
-            Cell & n = *(node->inpNodes[i]);
+            Node & n = *(node->inpNodes[i]);
             n.EwrtX += node->weights[i] * node->EwrtX;
         }
         node->EwrtX = 0;
@@ -153,7 +156,7 @@ void Dense::SetPrevEwrtA() {
 }
 
 void Dense::BackProp() {
-    for (Cell* node : nodes) {
+    for (Node* node : nodes) {
         node->EwrtX *= activation->DerivActivation(node->rawVal);
         for (int i = 0; i < node->weights.size(); i++) {
             node->sumWBChanges[i] -= node->inpNodes[i]->activation * node->EwrtX;
@@ -223,7 +226,7 @@ LSTM::LSTM(int Width) : Layer(width, "") {
 void LSTM::AddNodes() {
     vector<Cell*> inNodes = GetInpNodes();
     for (int i = 0; i < width; i++) {
-        Cell* n = new LSTMNode(inNodes);
+        LSTMNode* n = new LSTMNode(inNodes);
         nodes.push_back(n);
     }
 }

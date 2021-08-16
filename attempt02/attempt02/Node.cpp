@@ -8,6 +8,9 @@
 using namespace std;
 using namespace ntwrk;
 
+void Cell::AdjustWB(int n) {}
+void Cell::SetActivation() {}
+
 Node::Node(vector<Cell*> _inpNodes) {
     inpNodes = _inpNodes;
     float activation = 0, error = 0, EwrtO = 0, rawVal = 0, cost = 0;
