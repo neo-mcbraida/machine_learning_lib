@@ -60,3 +60,7 @@ float Node::RandomVal() {
     weight -= 1;
     return weight;
 }
+
+void Node::AddError(float error, int index){
+    EwrtX += error;
+}

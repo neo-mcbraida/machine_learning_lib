@@ -81,19 +81,22 @@ void LSTMNode::BackProp(float nextState, float nextForget, float lossDeriv) {//r
     int timeSteps = state.size() - 1;
     // back prop through time starting at t = t
     // below is wrong, fix
-    float firstE = lossDeriv + tanh(state[timeSteps]) * sigmoid.DerivActivation(sums[3][timeSteps]) * weights[3][0];
-    float common_deriv = firstE * GetActivationByState(timeSteps);
+    //float firstE = lossDeriv + tanh(state[timeSteps]) * sigmoid.DerivActivation(sums[3][timeSteps]) * weights[3][0];
+    totalErrors[timeSteps] += lossDeriv;
+    float common_deriv = lossDeriv * GetActivationByState(timeSteps);
+    float firstE = GetPrevError(common_deriv, timeSteps);
+    common_deriv += firstE * GetActivationByState(timeSteps);
     AddWeightChange(timeSteps, nextState, common_deriv);
     float nextState = state[timeSteps];
     float nextForget = Fz[timeSteps];
     timeSteps--;
-    totalErrors[timeSteps] += firstE;// this is totally gross
+    //totalErrors[timeSteps] += firstE;// this is totally gross
     for (int t = timeSteps; t > 0; t--) {// at this point total loss should already have a value
         common_deriv = (totalErrors[t] * GetActivationByState(t)) + nextForget;
         for (int i = 0; i < inpNodes.size(); i++) {
             AddWeightChange(t, nextState, common_deriv);
         }
-        SetPrevError(common_deriv, t);
+        totalErrors[t-1] += GetPrevError(common_deriv, t);
         nextState = state[t];
         nextForget = Fz[t];
     }
@@ -154,13 +157,13 @@ float LSTMNode::GetCByWc(float sum, float input, int index) {
 }
 
 // Same node prev timestep
-void LSTMNode::SetPrevError(float common_deriv, int index) {
+float LSTMNode::GetPrevError(float common_deriv, int index) {
     float temp = state[index - 1] * (Fz[index] * (1 - Fz[index])) * out[index - 1];
     float result = 3 * temp * common_deriv;
     temp = tanh(state[index]) * sigmoid.DerivActivation(sums[3][index]) * weights[3][0];
     result += totalErrors[index] * temp;
-    totalErrors[index - 1] += (result);
-    //return result;
+    //totalErrors[index - 1] += (result);
+    return result;
 }
 
 // need to add attribute to store current timestep during backprop

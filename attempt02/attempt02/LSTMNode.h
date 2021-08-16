@@ -7,9 +7,9 @@
 using std::vector;
 
 namespace ntwrk {
-	class LSTMNode {
+	class LSTMNode : public Node{
 	public:
-		vector<LSTMNode*> inpNodes;
+		vector<Node*> inpNodes;
 		//vector<vector<float>> weightsF, weightsI, weightsA, weightsO;
 		//vector<vector<float>> weightChangeF, weightChangeI, weightChaOngeA, weightChangeO;
 		vector<vector<float>> inputs;//
@@ -24,7 +24,7 @@ namespace ntwrk {
 		vector<float> Fz, Iz, Az, Oz;// z denotes zero
 		vector<float> state, out;
 		vector<float> totalErrors;
-		LSTMNode(vector<LSTMNode*>);
+		LSTMNode(vector<Node*>);
 		void SetActivation();
 		float ReturnSum(vector<float> weights, float bias);
 		void SetState();
@@ -38,7 +38,7 @@ namespace ntwrk {
 		float GetCByWf(float sum, float input, int index);
 		float GetCByWu(float sum, float input, int index);
 		float GetCByWc(float sum, float input, int index);
-		void SetPrevError(float common_deriv, int index);
+		float GetPrevError(float common_deriv, int index);
 	private:
 		float RandomVal();
 	};
