@@ -5,7 +5,7 @@
 
 using namespace ntwrk;
 
-LSTMNode::LSTMNode(vector<LSTMNode*> inps) {
+LSTMNode::LSTMNode(vector<Cell*> inps) {
     int no_of_inputs = inps.size();
     inpNodes = inps;
     state.push_back(0);
@@ -27,9 +27,9 @@ LSTMNode::LSTMNode(vector<LSTMNode*> inps) {
 
 void LSTMNode::SetActivation() {
     vector<float> timeStepInps = {};
-    timeStepInps.push_back(out[out.size() - 1]);// may not need to store array of all inputs
-    for (LSTMNode* node : inpNodes) {
-        timeStepInps.push_back(node->out[out.size() - 1]);
+    timeStepInps.push_back(activation);// may not need to store array of all inputs
+    for (Cell* node : inpNodes) {
+        timeStepInps.push_back(node->activation);
     }
     inputs.push_back(timeStepInps);
     float temp_Fz = ReturnSum(weights[0], biases[0]);
@@ -68,7 +68,8 @@ void LSTMNode::SetState() {
 
 void LSTMNode::SetOut() {
     float temp = state[state.size()];
-    out.push_back(tanh(temp) * Oz[Oz.size() - 1]);
+    activation = tanh(temp) * Oz[Oz.size() - 1];
+    out.push_back(activation);
 }
 
 float LSTMNode::RandomVal() {
@@ -117,8 +118,12 @@ void LSTMNode::AddWeightChange(int time, float nextState, float common_deriv) {
         prevNodeError += weights[1][i] * totalErrors[time];
         prevNodeError += weights[2][i] * totalErrors[time];
         prevNodeError += weights[3][i] * totalErrors[time];
-        inpNodes[i]->totalErrors[time] += prevNodeError;// prev nodes of same timestep
+        inpNodes[i]->AddError(prevNodeError, time);// prev nodes of same timestep
     }
+}
+
+void LSTMNode::AddError(float error, int index) {
+    totalErrors[index] += error;
 }
 
 float LSTMNode::GetStateByPrevState(int index) { return Fz[index]; }// should probably remove this

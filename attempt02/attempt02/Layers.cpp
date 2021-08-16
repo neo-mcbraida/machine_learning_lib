@@ -4,6 +4,7 @@
 #include "Layers.h"
 #include "node.h"
 #include "Activations.h"
+#include "LSTMNode.h"
 
 using namespace std;
 using namespace ntwrk;
@@ -49,10 +50,10 @@ void Layer::AddNodes() {
     }
 }
 
-vector<Node*> Layer::GetInpNodes(vector<int> inputInds) {
-    vector<Node*> _nodes;
-    Node* tempN;
-    if (prevLayer != NULL) {
+vector<Cell*> Layer::GetInpNodes() {
+    //vector<Cell*> _nodes;
+    //Cell* tempN;
+    /*if (prevLayer != NULL) {
         if (std::find(inputInds.begin(), inputInds.end(), prevLayer->index) != inputInds.end()) {
             for(int i = 0; i < prevLayer->nodes.size(); i++){
                 tempN = prevLayer->nodes[i];
@@ -63,8 +64,14 @@ vector<Node*> Layer::GetInpNodes(vector<int> inputInds) {
             vector<Node*> temp = prevLayer->prevLayer->GetInpNodes(inputInds);
             _nodes.insert(_nodes.end(), temp.begin(), temp.end());
         }
+    }*/
+    vector<Cell*> nodes = {};
+    if (prevLayer != NULL) {
+        for (Cell* n : prevLayer->nodes) {
+            nodes.push_back(n);
+        }
     }
-    return _nodes;
+    return nodes;
 }
 
 void Layer::AddLayer(Layer* newLayer){
@@ -80,7 +87,7 @@ void Layer::SaveLayer(string fName) {
     //const char* layer
 }
 
-void Layer::SumWeights(vector<float>& weights){
+/*void Layer::SumWeights(vector<float>& weights) {
     for (Node* node : nodes) {
         for (float weight : node->weights) {
             weights.push_back(weight);
@@ -89,13 +96,13 @@ void Layer::SumWeights(vector<float>& weights){
     if (nextLayer != NULL) {
         nextLayer->SumWeights(weights);
     }
-}
+}*/
 
-void Layer::EndBackProp() {
+/*void Layer::EndBackProp() {
     for (int i = 0; i < nodes.size(); i++) {
         nodes[i]->desiredVals.clear();
     }
-}
+}*/
 
 Dense::Dense(int width, vector<int> _inputIndexes, string activation) : Layer(width, activation){
     inpIndexes = _inputIndexes;
@@ -109,13 +116,13 @@ void Dense::ForwardProp() {
 }
 
 void Dense::AddNodes() {
-    vector<Node*> inpNodes = GetInpNodes(inpIndexes);
+    vector<Cell*> inpNodes = GetInpNodes();
     std::reverse(inpNodes.begin(), inpNodes.end());
     int i = 0;
     while (i < width) {
         //weightsPointer->push_back({});
         //vector<float>& temp = (*weightsPointer)[weightsPointer->size() - 1];
-        Node* nodeP = new Node(inpNodes);
+        Cell* nodeP = new Node(inpNodes);
         nodes.push_back(nodeP);
         i++;
     }
@@ -124,7 +131,7 @@ void Dense::AddNodes() {
 void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
     float deltaWeight;
     for (int i = 0; i < nodes.size(); i++) {
-        Node& tempNode = *(nodes[i]);
+        Cell& tempNode = *(nodes[i]);
         tempNode.EwrtX = lossFunc->GetDerLoss(tempNode.activation, desiredOut[i]); 
         deltaWeight = tempNode.EwrtX * tempNode.rawVal;
         for (float weightC : tempNode.sumWBChanges) {
@@ -136,9 +143,9 @@ void Dense::StartBackProp(vector<float> desiredOut, Loss* lossFunc) {
 }
 
 void Dense::SetPrevEwrtA() {
-    for (Node* node : nodes) {
+    for (Cell* node : nodes) {
         for (int i = 0; i < node->weights.size(); i++) {
-            Node & n = *(node->inpNodes[i]);
+            Cell & n = *(node->inpNodes[i]);
             n.EwrtX += node->weights[i] * node->EwrtX;
         }
         node->EwrtX = 0;
@@ -146,7 +153,7 @@ void Dense::SetPrevEwrtA() {
 }
 
 void Dense::BackProp() {
-    for (Node* node : nodes) {
+    for (Cell* node : nodes) {
         node->EwrtX *= activation->DerivActivation(node->rawVal);
         for (int i = 0; i < node->weights.size(); i++) {
             node->sumWBChanges[i] -= node->inpNodes[i]->activation * node->EwrtX;
@@ -188,7 +195,7 @@ float Dense::GetCost(vector<float> desiredOut) {
 }
 
 void Dense::SetChanges(int batchSize) {
-    for (Node* node : nodes) {
+    for (Cell* node : nodes) {
         node->AdjustWB(batchSize);
     }
     if (prevLayer->prevLayer != NULL) {
@@ -206,5 +213,17 @@ void Input::StartForwardProp(vector<float> input) {
 void Input::SetNodes(vector<float> input) {
     for (int i = 0; i < nodes.size(); i++) {
         (nodes[i])->activation = input[i];
+    }
+}
+
+LSTM::LSTM(int Width) : Layer(width, "") {
+
+}
+
+void LSTM::AddNodes() {
+    vector<Cell*> inNodes = GetInpNodes();
+    for (int i = 0; i < width; i++) {
+        Cell* n = new LSTMNode(inNodes);
+        nodes.push_back(n);
     }
 }

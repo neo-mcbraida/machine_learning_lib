@@ -11,15 +11,15 @@ namespace ntwrk {
 	class ActivationFunc {
 	public:
 		virtual float DerivActivation(float) = 0;
-		virtual void SetNodeActivation(vector<Node*>) = 0;
-		void Normalise(vector<Node*>, float);
+		virtual void SetNodeActivation(vector<Cell*>) = 0;
+		void Normalise(vector<Cell*>, float);
 	private:
 	};
 
 	class Sigmoid : public ActivationFunc{
 	public:
 		virtual float DerivActivation(float);
-		virtual void SetNodeActivation(vector<Node*>);
+		virtual void SetNodeActivation(vector<Cell*>);
 		virtual float Operate(float val);
 	private:
 	};
@@ -27,7 +27,7 @@ namespace ntwrk {
 	class Relu : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
-		virtual void SetNodeActivation(vector<Node*>);
+		virtual void SetNodeActivation(vector<Cell*>);
 		virtual float Operate(float val);
 	private:
 	};
@@ -35,8 +35,8 @@ namespace ntwrk {
 	class Softmax : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
-		virtual void SetNodeActivation(vector<Node*>);
-		float AdjustNodeActivation(Node* node);
+		virtual void SetNodeActivation(vector<Cell*>);
+		float AdjustNodeActivation(Cell* node);
 		virtual float Operate(float val);
 	private:
 	};
@@ -44,14 +44,14 @@ namespace ntwrk {
 	class Constant : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float);
-		virtual void SetNodeActivation(vector<Node*> nodes);
+		virtual void SetNodeActivation(vector<Cell*> nodes);
 	private:
 	};
 
 	class Tanh : public ActivationFunc {
 	public:
 		virtual float DerivActivation(float val);
-		virtual void SetNodeActivation(vector<Node*> nodes);
+		virtual void SetNodeActivation(vector<Cell*> nodes);
 		virtual float Operate(float val);
 	};
 }

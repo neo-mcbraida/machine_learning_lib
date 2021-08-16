@@ -7,9 +7,9 @@
 using std::vector;
 
 namespace ntwrk {
-	class LSTMNode : public Node{
+	class LSTMNode : public Cell{
 	public:
-		vector<Node*> inpNodes;
+		vector<Cell*> inpNodes;
 		//vector<vector<float>> weightsF, weightsI, weightsA, weightsO;
 		//vector<vector<float>> weightChangeF, weightChangeI, weightChaOngeA, weightChangeO;
 		vector<vector<float>> inputs;//
@@ -24,7 +24,8 @@ namespace ntwrk {
 		vector<float> Fz, Iz, Az, Oz;// z denotes zero
 		vector<float> state, out;
 		vector<float> totalErrors;
-		LSTMNode(vector<Node*>);
+		float activation;
+		LSTMNode(vector<Cell*>);
 		void SetActivation();
 		float ReturnSum(vector<float> weights, float bias);
 		void SetState();
@@ -32,6 +33,7 @@ namespace ntwrk {
 		float GetStateByPrevState(int index);
 		float GetActivationByState(int index);
 		float GetNextStateByState(int index);
+		void AddError(float errror, int index);
 		void BackProp(float nextState, float nextForget, float NextErrorbyActiv);
 		void AddWeightChange(int time, float nextState, float common_deriv);
 		float GetAByWo(float sum, float input, int index);

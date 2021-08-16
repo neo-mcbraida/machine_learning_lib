@@ -16,7 +16,6 @@ namespace ntwrk {
 	public:
 		float totalError = 0;
 		int index;
-		vector<Node*> nodes;
 		ActivationFunc* activation;
 		Layer* nextLayer = nullptr;
 		Layer* prevLayer = nullptr;
@@ -32,8 +31,8 @@ namespace ntwrk {
 		virtual void SetPrevEwrtR();
 		virtual void SetChanges(int batchSize);
 		virtual void SaveLayer(string);
-		vector<Node*> GetInpNodes(vector<int> inputInds);
-		void SumWeights(vector<float>&);
+		vector<Cell*> GetInpNodes();
+		//void SumWeights(vector<float>&);
 	private:
 		void SetActivation(string activation);
 	};
@@ -41,6 +40,7 @@ namespace ntwrk {
 	class Dense : public Layer {
 	public:
 		vector<Layer*> inputLayers;
+		vector<Node*> nodes;
 		//vector<int> inpIndexes;
 		Dense(int width, vector<int> inpIndexes, string activation);
 		virtual void ForwardProp();
@@ -53,8 +53,11 @@ namespace ntwrk {
 	private:
 	};
 
-	class Recurrent : public Layer {
+	class LSTM : public Layer {
 	public:
+		vector<LSTMNode*> nodes;
+		vector<LSTMNode*> nodes;
+		LSTM(int width);
 		virtual void AddNodes();
 	};
 	

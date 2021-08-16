@@ -7,7 +7,7 @@
 using namespace std;
 using namespace ntwrk;
 
-void ActivationFunc::Normalise(vector<Node*> nodes, float maxVal) {
+void ActivationFunc::Normalise(vector<Cell*> nodes, float maxVal) {
 	for (Node* node : nodes) {
 		if (maxVal != (float)0.0) {
 			node->activation = node->activation / maxVal;
@@ -22,10 +22,10 @@ float Sigmoid::DerivActivation(float val) {
 	return deriv;
 }
 
-void Sigmoid::SetNodeActivation(vector<Node*> nodes) {
+void Sigmoid::SetNodeActivation(vector<Cell*> nodes) {
 	float activation;
 	float max = NULL;
-	for (Node* node : nodes) {
+	for (Cell* node : nodes) {
 		node->SetActivation();
 		activation = 1 / (1 + exp(-(node->rawVal)));
 		node->activation = activation;
@@ -48,9 +48,9 @@ float Relu::DerivActivation(float val) {
 	else { return 1; }
 }
 
-void Relu::SetNodeActivation(vector<Node*> nodes) {
+void Relu::SetNodeActivation(vector<Cell*> nodes) {
 	float maxActiv = 0;
-	for (Node* node : nodes) {
+	for (Cell* node : nodes) {
 		node->SetActivation();
 		node->activation = node->rawVal;
 		if (node->activation < 0) {
@@ -75,25 +75,25 @@ float Softmax::DerivActivation(float val) {
 	return temp;
 }
 
-void Softmax::SetNodeActivation(vector<Node*> nodes) {
+void Softmax::SetNodeActivation(vector<Cell*> nodes) {
 	float totalactivation = 0;
 	float max = 0;
-	for (Node* node : nodes) {
+	for (Cell* node : nodes) {
 		if (node->rawVal > max) {
 			max = node->rawVal;
 		}
 	}
 	max *= -1;
-	for (Node* node : nodes) {
+	for (Cell* node : nodes) {
 		node->rawVal += max;
 		totalactivation += AdjustNodeActivation(node);
 	}
-	for (Node* node : nodes) {
+	for (Cell* node : nodes) {
 		node->activation /= totalactivation;
 	}
 }
 
-float Softmax::AdjustNodeActivation(Node* node) {
+float Softmax::AdjustNodeActivation(Cell* node) {
 	(*node).SetActivation();
 	(*node).activation = exp((*node).rawVal);
 	return (*node).activation;
@@ -107,8 +107,8 @@ float Constant::DerivActivation(float val) {
 	return val;
 }
 
-void Constant::SetNodeActivation(vector<Node*> nodes) {
-	for (Node* node : nodes) { 
+void Constant::SetNodeActivation(vector<Cell*> nodes) {
+	for (Cell* node : nodes) {
 		node->SetActivation(); 
 		node->activation = node->rawVal;
 	}
@@ -120,7 +120,7 @@ float Tanh::DerivActivation(float val) {
 	return derivative;
 }
 
-void Tanh::SetNodeActivation(vector<Node*> nodes) {};
+void Tanh::SetNodeActivation(vector<Cell*> nodes) {};
 
 float Tanh::Operate(float val) {
 	return tanh(val);

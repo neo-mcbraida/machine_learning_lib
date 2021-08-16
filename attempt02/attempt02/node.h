@@ -6,16 +6,26 @@
 using std::vector;
 
 namespace ntwrk {
-	class Node {
+	class Cell {
+	public:
+		float activation;
+		vector<Cell*> inpNodes;
+		virtual void AddError(float error, int index) = 0; 
+		//virtual void SetNodeActivation() = 0;
+		virtual void AdjustWB(int) = 0;
+		virtual void SetActivation() = 0;
+	};
+
+	class Node : public Cell{
 	public://EwrtX is error with respect to rawVal
-		float activation, rawVal, EwrtX = 0, bias = 0;
+		float rawVal, EwrtX = 0, bias = 0;
 		vector<float> sumWBChanges, desiredVals;
 		vector<float> weights = {};
-		vector<Node*> inpNodes;
-		Node(vector<Node*>);
+		Node(vector<Cell*>);
 		virtual void SetActivation();
 		void AdjustWB(int batchSize);
 		//void SaveNode();
+		virtual void AddError(float error, int index);
 	private:
 		float RandomVal();
 	};

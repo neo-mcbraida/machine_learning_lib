@@ -8,7 +8,7 @@
 using namespace std;
 using namespace ntwrk;
 
-Node::Node(vector<Node*> _inpNodes) {
+Node::Node(vector<Cell*> _inpNodes) {
     inpNodes = _inpNodes;
     float activation = 0, error = 0, EwrtO = 0, rawVal = 0, cost = 0;
     float deltaWeights = 0;
